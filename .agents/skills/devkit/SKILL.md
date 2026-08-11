@@ -72,7 +72,7 @@ Registry file: `$HOME/linux-devkit/projects.yaml` (fallback `$HOME/.linux-devkit
     org: <org>
     pm2: <key>
     port: <unique>      # avoid 3001, 3101, 3102, 3201, ...
-    infisical: <org>
+    doppler: <slug>
     tags: [<org>, product]
 ```
 
@@ -80,7 +80,7 @@ Registry file: `$HOME/linux-devkit/projects.yaml` (fallback `$HOME/.linux-devkit
 
 1. `bash ~/linux-devkit/install.sh --profile default -y`
 2. Private Git: `GH_TOKEN` or SSH (not interactive login as default)
-3. Secrets: Infisical — never in projects.yaml
+3. Secrets: Doppler — never in projects.yaml
 4. `devkit restore` && `devkit doctor`
 
 ## Path lookup
@@ -92,14 +92,14 @@ devkit list
 
 ## Cloudflare Wrangler
 
-- Infisical: `CLOUDFLARE_API_TOKEN` (+ optional `CLOUDFLARE_ACCOUNT_ID`)
+- Doppler: `CLOUDFLARE_API_TOKEN` (+ optional `CLOUDFLARE_ACCOUNT_ID`)
 - Prefer API token env over `wrangler login` OAuth on VPS
-- `infisical run -- bunx wrangler deploy` from project dir
+- `doppler run --project=<slug> --config=dev -- bunx wrangler deploy` from project dir
 
 ## PM2 + Neon
 
 - PM2 process name = yaml `pm2` field
-- DB: Neon `DATABASE_URL` from Infisical (no local Postgres by default)
+- DB: Neon `DATABASE_URL` from Doppler (no local Postgres by default)
 
 ## Do NOT
 

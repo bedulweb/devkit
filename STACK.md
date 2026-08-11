@@ -4,21 +4,21 @@
 - JS: Bun (primary), Node via nvm (fallback)
 - TypeScript: 7.x
 - Go: official toolchain → ~/.local/go
-- Secrets: Infisical → env (never commit keys)
+- Secrets: Doppler → env (never commit keys)
 - Multi-project: projects.yaml + devkit restore
 - Research: Exa MCP (+ Firecrawl) via env
 
 ## Run agents with secrets
 
 ```bash
-infisical login   # once on laptop
-# or INFISICAL_TOKEN=... on VPS
+# sekali: isi ~/.devkit.env (DOPPLER_TOKEN, DOPPLER_PROJECT, DOPPLER_CONFIG)
+source ~/linux-devkit/scripts/export-doppler.sh
 
-infisical run --env=dev -- grok
-infisical run --env=dev -- opencode
+doppler run --project="${DOPPLER_PROJECT:-wazapin-platform}" --config=dev -- grok
+doppler run --project="${DOPPLER_PROJECT:-wazapin-platform}" --config=dev -- opencode
 ```
 
-## Required Infisical keys (suggested)
+## Required Doppler keys (suggested)
 
 ```
 EXA_API_KEY

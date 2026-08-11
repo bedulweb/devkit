@@ -10,10 +10,9 @@
 #
 # Optional env (export before running, or put in ~/.devkit.env):
 #   GH_TOKEN                          GitHub PAT (private repos)
-#   INFISICAL_UNIVERSAL_AUTH_CLIENT_ID
-#   INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET
-#   INFISICAL_DOMAIN                  default US cloud API
-#   INFISICAL_ENV                     default: dev
+#   DOPPLER_TOKEN                     Doppler service token (dp.st.xxx)
+#   DOPPLER_PROJECT                   project default (mis. wazapin-platform)
+#   DOPPLER_CONFIG                    config default (dev|stg|prd)
 #   DEVKIT_PROFILE                    minimal|default|full  (default: default)
 #   DEVKIT_WITH_DOCKER                0|1  (default: 0)
 #   DEVKIT_WITH_HERDR                 0|1  (default: 1 for default/full profile)
@@ -53,9 +52,8 @@ WITH_DOCKER="${DEVKIT_WITH_DOCKER:-0}"
 WITH_HERDR="${DEVKIT_WITH_HERDR:-1}"
 SKIP_SKILLS="${DEVKIT_SKIP_SKILLS:-0}"
 SKIP_DEPS="${DEVKIT_SKIP_INSTALL_DEPS:-0}"
-INFISICAL_ENV="${INFISICAL_ENV:-dev}"
-# US cloud default; EU users: export INFISICAL_DOMAIN=https://eu.infisical.com/api
-INFISICAL_DOMAIN="${INFISICAL_DOMAIN:-https://app.infisical.com/api}"
+DOPPLER_CONFIG="${DOPPLER_CONFIG:-dev}"
+DOPPLER_API_HOST="${DOPPLER_API_HOST:-https://api.doppler.com}"
 
 export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${HOME}/go/bin:${PATH}"
 export GOPATH="${GOPATH:-$HOME/go}"
@@ -149,37 +147,36 @@ step_github() {
   warn "  # then re-run: bash ~/linux-devkit/run.sh"
 }
 
-# ── step 4: Infisical Universal Auth ────────────────────────────────────────
-step_infisical() {
-  log "4/7  Infisical (optional but recommended)"
+# ── step 4: Doppler (secrets) ───────────────────────────────────────────────
+step_doppler() {
+  log "4/7  Doppler (secrets)"
 
-  if ! have infisical; then
-    warn "infisical CLI missing — skip"
+  if ! have doppler; then
+    warn "doppler CLI missing — skip (bash ~/linux-devkit/install.sh)"
     return 0
   fi
 
-  local cid="${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}"
-  local csec="${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}"
-
-  if [[ -z "$cid" || -z "$csec" ]]; then
-    warn "INFISICAL_UNIVERSAL_AUTH_CLIENT_ID / _CLIENT_SECRET not set — skip vault login"
-    warn "  export INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=..."
-    warn "  export INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=..."
-    warn "  # EU: export INFISICAL_DOMAIN=https://eu.infisical.com/api"
+  local tok="${DOPPLER_TOKEN:-}"
+  if [[ -z "$tok" ]]; then
+    warn "DOPPLER_TOKEN not set — skip (isi di ~/.devkit.env)"
+    warn "  DOPPLER_TOKEN=dp.st.xxx"
+    warn "  DOPPLER_PROJECT=wazapin-platform"
+    warn "  DOPPLER_CONFIG=dev"
     return 0
   fi
 
-  export INFISICAL_DOMAIN
-  if infisical login \
-      --domain="$INFISICAL_DOMAIN" \
-      --method=universal-auth \
-      --client-id="$cid" \
-      --client-secret="$csec" 2>/dev/null; then
-    ok "Infisical universal-auth login OK (domain=$INFISICAL_DOMAIN)"
-    infisical login status 2>/dev/null | head -20 || true
+  export DOPPLER_TOKEN
+  if doppler whoami >/dev/null 2>&1; then
+    ok "Doppler authenticated"
+    doppler whoami 2>/dev/null | head -12 || true
   else
-    warn "Infisical login failed (401?). Check credentials / INFISICAL_DOMAIN (US vs EU)."
-    warn "Tried domain: $INFISICAL_DOMAIN"
+    doppler configure set token "$tok" 2>/dev/null || true
+    if doppler whoami >/dev/null 2>&1; then
+      ok "Doppler authenticated (token dikonfigurasi)"
+      doppler whoami 2>/dev/null | head -12 || true
+    else
+      warn "Doppler auth gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
+    fi
   fi
 }
 
@@ -283,15 +280,15 @@ ${B}Everyday${Z}
   devkit list
   cd "\$(devkit path wabase-core)"
 
-${B}With Infisical secrets${Z}
+${B}With Doppler secrets${Z}
   cd "\$(devkit path wabase-core)"
-  infisical run --env=${INFISICAL_ENV} -- bun run dev
+  doppler run --project=wabase-core --config=${DOPPLER_CONFIG:-dev} -- bun run dev
   # Cloudflare:
-  infisical run --env=${INFISICAL_ENV} -- bunx wrangler deploy
+  doppler run --project=wabase-core --config=${DOPPLER_CONFIG:-dev} -- bunx wrangler deploy
 
 ${B}PM2 (after you have a start script)${Z}
   cd "\$(devkit path wabase-core)"
-  infisical run --env=prod -- pm2 start ecosystem.config.cjs
+  doppler run --project=wabase-core --config=prod -- pm2 start ecosystem.config.cjs
   # or: pm2 start bun --name wabase-core -- run start
 
 ${B}Agents (OpenCode / others)${Z}
@@ -322,7 +319,7 @@ main() {
   step_kit
   step_install
   step_github
-  step_infisical
+  step_doppler
   step_restore
   step_skills
   step_deps

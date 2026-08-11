@@ -41,7 +41,7 @@ else
   echo "     cp ${KIT}/.devkit.env.example ~/.devkit.env"
   echo "     nano ~/.devkit.env"
   echo ""
-  echo "   Lanjut tanpa secret? (private clone & Infisical akan skip)"
+  echo "   Lanjut tanpa secret? (private clone & Doppler akan skip)"
   echo "   Tekan Enter untuk lanjut, Ctrl+C untuk batal."
   read -r _
 fi
@@ -51,19 +51,18 @@ echo ""
 echo "==> running full setup (run.sh)..."
 bash "${KIT}/run.sh"
 
-# ── Infisical login ulang explicit (kalau credentials ada) ──────────────────
-if command -v infisical >/dev/null 2>&1 \
-  && [[ -n "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" ]] \
-  && [[ -n "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" ]]; then
+# ── Doppler configure explicit (kalau token ada) ────────────────────────────
+if command -v doppler >/dev/null 2>&1 && [[ -n "${DOPPLER_TOKEN:-}" ]]; then
   echo ""
-  echo "==> Infisical login (universal-auth)..."
-  infisical login \
-    --domain="${INFISICAL_DOMAIN:-https://app.infisical.com/api}" \
-    --method=universal-auth \
-    --client-id="${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID}" \
-    --client-secret="${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET}" \
-    && echo "✓ Infisical OK" \
-    || echo "⚠ Infisical login gagal — cek domain US/EU + credentials"
+  echo "==> Doppler configure..."
+  export DOPPLER_TOKEN
+  if doppler whoami >/dev/null 2>&1; then
+    echo "✓ Doppler OK"
+  else
+    doppler configure set token "${DOPPLER_TOKEN}" 2>/dev/null \
+      && echo "✓ Doppler OK" \
+      || echo "⚠ Doppler configure gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
+  fi
 fi
 
 # ── ringkas ─────────────────────────────────────────────────────────────────
@@ -82,5 +81,5 @@ if command -v devkit >/dev/null 2>&1; then
   echo "  cd \"\$(devkit path betterpay)\""
   echo ""
   echo "Dengan secrets:"
-  echo "  infisical run --env=${INFISICAL_ENV:-dev} -- bun run dev"
+  echo "  doppler run --project=wazapin-platform --config=${DOPPLER_CONFIG:-dev} -- bun run dev"
 fi

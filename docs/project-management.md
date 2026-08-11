@@ -52,7 +52,7 @@ Edit YAML langsung: `~/linux-devkit/projects.yaml` lalu `devkit sync-registry` +
 ## Secrets
 Not in projects.yaml. Use:
 - `gh auth` for private repos
-- Infisical per project (`infisical run -- ...`)
+- Doppler per project (`doppler run --project=<slug> --config=<env> -- ...`)
 - never commit API keys
 
 ## Exa MCP

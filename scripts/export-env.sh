@@ -51,8 +51,9 @@ fi
 
 export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${HOME}/go/bin:${PATH:-}"
 export GOPATH="${GOPATH:-$HOME/go}"
-export INFISICAL_DOMAIN="${INFISICAL_DOMAIN:-https://app.infisical.com/api}"
-export INFISICAL_ENV="${INFISICAL_ENV:-dev}"
+export DOPPLER_API_HOST="${DOPPLER_API_HOST:-https://api.doppler.com}"
+export DOPPLER_DASHBOARD_HOST="${DOPPLER_DASHBOARD_HOST:-https://dashboard.doppler.com}"
+export DOPPLER_CONFIG="${DOPPLER_CONFIG:-dev}"
 
 _status() {
   # print SET/NOT SET without leaking values
@@ -66,10 +67,9 @@ _status() {
 
 echo "✓ loaded: ${_ENV_FILE}"
 echo "  GH_TOKEN:          $(_status "${GH_TOKEN:-}")"
-echo "  INFISICAL_CLIENT:  $(_status "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}")"
-echo "  INFISICAL_SECRET:  $(_status "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}")"
-echo "  INFISICAL_DOMAIN:  ${INFISICAL_DOMAIN}"
-echo "  INFISICAL_ENV:     ${INFISICAL_ENV}"
+echo "  DOPPLER_TOKEN:     $(_status "${DOPPLER_TOKEN:-}")"
+echo "  DOPPLER_PROJECT:   ${DOPPLER_PROJECT:-<belum di-set>}"
+echo "  DOPPLER_CONFIG:    ${DOPPLER_CONFIG:-dev}"
 echo ""
 echo "Next:"
 echo "  bash ~/linux-devkit/scripts/install-full.sh"

@@ -13,7 +13,7 @@ projects:
     org: wabase
     pm2: wabase-core
     port: 3001
-    infisical: wabase
+    doppler: wabase-core
     tags:
     - wabase
     - product
@@ -26,7 +26,7 @@ projects:
     org: wazapin
     pm2: wazapin-platform
     port: 3101
-    infisical: wazapin
+    doppler: wazapin-platform
     tags:
     - wazapin
     - product
@@ -39,7 +39,7 @@ projects:
     org: wazapin
     pm2: wazapin-web
     port: 3102
-    infisical: wazapin
+    doppler: wazapin-platform
     tags:
     - wazapin
     - product
@@ -53,7 +53,7 @@ projects:
     org: usebetterpay
     pm2: betterpay
     port: 3201
-    infisical: betterpay
+    doppler: betterpay
     tags:
     - usebetterpay
     - betterpay
@@ -69,7 +69,7 @@ projects:
     org: withliaid
     pm2: withliaid-sfi
     port: 3301
-    infisical: withliaid
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - withliaid
     - product
@@ -84,7 +84,7 @@ projects:
     org: usebetterpay
     pm2: betterpay-dogfood
     port: 8791
-    infisical: betterpay
+    doppler: betterpay
     tags:
     - usebetterpay
     - product
@@ -98,7 +98,7 @@ projects:
     org: usebetterpay
     pm2: usebetterpay-web
     port: 4321
-    infisical: betterpay
+    doppler: betterpay
     tags:
     - usebetterpay
     - product
@@ -145,7 +145,7 @@ projects:
     description: JustCleaning - cleaning service platform (frontend + backend)
     org: withliaid
     pm2: justcleaning
-    infisical: justcleaning
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - justcleaning
     - product
@@ -157,7 +157,7 @@ projects:
     description: WithLia - AI companion/productivity app monorepo
     org: withliaid
     pm2: withlia
-    infisical: withlia
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - withlia
     - product
@@ -169,7 +169,7 @@ projects:
     description: Aimentor - AI mentor/education monorepo (trainerhub)
     org: trisnalesmana
     pm2: aimentor
-    infisical: aimentor
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - aimentor
     - product
@@ -182,7 +182,7 @@ projects:
     description: Ascentia - websee-id product
     org: websee-id
     pm2: ascentia
-    infisical: ascentia
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - ascentia
     - product
@@ -194,7 +194,7 @@ projects:
     description: bentopdf - PDF tool (LibreOffice WASM on Cloudflare)
     org: alam00000
     pm2: bentopdf
-    infisical: bentopdf
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - bentopdf
     - product
@@ -206,7 +206,7 @@ projects:
     description: CustomCraft - websee-id product
     org: websee-id
     pm2: customcraft
-    infisical: customcraft
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - customcraft
     - product
@@ -218,7 +218,7 @@ projects:
     description: Mail Duck - email generation app (Cloudflare Worker)
     org: bedulweb
     pm2: mail-duck
-    infisical: mail-duck
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - mail-duck
     - product
@@ -230,7 +230,7 @@ projects:
     description: Hono email generator
     org: bedulweb
     pm2: hono-email-gen
-    infisical: hono-email-gen
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - hono-email-gen
     - product
@@ -242,7 +242,7 @@ projects:
     description: Loka Points - websee-id product
     org: websee-id
     pm2: loka-points
-    infisical: loka-points
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - loka-points
     - product
@@ -254,7 +254,7 @@ projects:
     description: order.rs - order management (Rust)
     org: bedulweb
     pm2: orders
-    infisical: orders
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - orders
     - product
@@ -267,7 +267,7 @@ projects:
     description: RouteID - routing/id service
     org: bedulweb
     pm2: routeid
-    infisical: routeid
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - routeid
     - product
@@ -279,7 +279,7 @@ projects:
     description: Termio - terminal app (Swift)
     org: termio-sh
     pm2: termio
-    infisical: termio
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - termio
     - product
@@ -291,7 +291,7 @@ projects:
     description: Warp terminal - contribution fork (Windows foreground activation)
     org: bedulweb
     pm2: warp
-    infisical: warp
+    # doppler: <belum dipetakan> — secrets via .env/GitHub
     tags:
     - warp
     - product

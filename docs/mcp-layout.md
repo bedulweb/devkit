@@ -24,7 +24,7 @@ See `~/projects/research/README.md`.
 
 ## Secrets
 
-Prefer env vars / Infisical over pasting keys in `config.toml`.
+Prefer env vars / Doppler over pasting keys in `config.toml`.
 Keys in `~/.grok/config.toml` are world-readable to your user — `chmod 600`.
 
 ```bash

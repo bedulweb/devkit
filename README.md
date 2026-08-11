@@ -2,25 +2,25 @@
 
 Installer + multi-project workspace for disposable Linux VPs.
 
-- **Tools:** Bun, TypeScript 7, Go, PM2, Infisical, gh, modern CLI
+- **Tools:** Bun, TypeScript 7, Go, PM2, Doppler, gh, modern CLI
 - **Projects:** `~/projects/apps/<org>/<repo>` via `projects.yaml`
 - **Agents:** global skills pack (`npx skills`) + skill `devkit`
-- **Secrets:** Infisical (not in this repo)
+- **Secrets:** Doppler (not in this repo)
 
 ## New VM (one shot)
 
 ```bash
 # optional for private app repos:
 export GH_TOKEN=github_pat_xxx
-export INFISICAL_TOKEN=xxx
+export DOPPLER_TOKEN=dp.st.xxx
 
-curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/bootstrap-vps.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/bootstrap-vps.sh | bash
 ```
 
 Or:
 
 ```bash
-git clone https://github.com/ujang19/devkit.git ~/linux-devkit
+git clone https://github.com/bedulweb/devkit.git ~/linux-devkit
 bash ~/linux-devkit/install.sh --profile default -y
 source ~/.bashrc
 devkit restore
@@ -53,7 +53,7 @@ devkit add org-repo https://github.com/org/repo.git --path apps/org/repo --stack
 | Profile | Contents |
 |---------|----------|
 | minimal | core CLI + bun/go basics |
-| default | + herdr, Infisical, agents tools, skills pack |
+| default | + herdr, Doppler, agents tools, skills pack |
 | full | + docker/flutter/ccgram hooks |
 
 ## Skills
@@ -65,5 +65,5 @@ bash scripts/install-skills.sh
 
 ## Cloudflare / Neon
 
-- DB: Neon `DATABASE_URL` via Infisical
-- Workers: `CLOUDFLARE_API_TOKEN` via Infisical (not OAuth on VPS)
+- DB: Neon `DATABASE_URL` via Doppler
+- Workers: `CLOUDFLARE_API_TOKEN` via Doppler (not OAuth on VPS)

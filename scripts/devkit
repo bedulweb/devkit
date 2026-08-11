@@ -40,7 +40,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun go opencode python3 docker flutter herdr infisical direnv starship pm2; do
+    for c in git curl gh jq rg fd fzf uv node npm bun go opencode python3 docker flutter herdr doppler direnv starship pm2; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else

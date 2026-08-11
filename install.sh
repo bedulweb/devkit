@@ -26,7 +26,7 @@ WITH_ANDROID=0
 WITH_HERDR=0
 WITH_GROK=0
 WITH_CCGRAM=0
-WITH_INFISICAL=1
+WITH_DOPPLER=1
 NONINTERACTIVE=1
 ASSUME_YES=0
 SKIP_APT=0
@@ -56,7 +56,7 @@ Usage: bash install.sh [options]
 
 Profiles:
   --profile minimal   git, curl, gh, jq, rg, fd, fzf, uv, nvm+node
-  --profile default   minimal + herdr + direnv + starship + infisical (+ docker if --with-docker)
+  --profile default   minimal + herdr + direnv + starship + doppler (+ docker if --with-docker)
   --profile full      default + flutter + grok + ccgram hooks
 
 Optional components:
@@ -67,7 +67,7 @@ Optional components:
   --no-herdr          Skip herdr
   --with-grok         Ensure grok/agent path hints (does not download proprietary bin)
   --with-ccgram       Install ccgram (uv tool)
-  --no-infisical      Skip Infisical CLI
+  --no-doppler        Skip Doppler CLI
   --skip-apt          Never call apt (user-space only)
   -y, --yes           Non-interactive (default)
 
@@ -87,7 +87,7 @@ while [[ $# -gt 0 ]]; do
     --no-herdr) WITH_HERDR=0; shift ;;
     --with-grok) WITH_GROK=1; shift ;;
     --with-ccgram) WITH_CCGRAM=1; shift ;;
-    --no-infisical) WITH_INFISICAL=0; shift ;;
+    --no-doppler) WITH_DOPPLER=0; shift ;;
     --skip-apt) SKIP_APT=1; shift ;;
     -y|--yes) ASSUME_YES=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -375,29 +375,24 @@ install_starship() {
   ok "starship $($LOCAL_BIN/starship --version)"
 }
 
-install_infisical() {
-  if have infisical; then ok "infisical $(infisical --version 2>/dev/null | head -1)"; return; fi
-  log "install Infisical CLI"
-  local ver arch tgz
-  ver="$(github_latest_tag Infisical/cli)"
-  [[ -n "$ver" ]] || ver="0.43.104"
+install_doppler() {
+  if have doppler; then ok "doppler $(doppler --version 2>/dev/null | head -1)"; return; fi
+  log "install Doppler CLI"
+  local arch tgz
   arch="$(arch_go)"
-  tgz="$CACHE_DIR/cli_${ver}_linux_${arch}.tar.gz"
-  download "https://github.com/Infisical/cli/releases/download/v${ver}/cli_${ver}_linux_${arch}.tar.gz" "$tgz"
-  tar -C "$CACHE_DIR" -xzf "$tgz"
-  # tarball extracts binary named infisical at top level or nested
-  local bin
-  bin="$(find "$CACHE_DIR" -maxdepth 2 -type f -name infisical -executable 2>/dev/null | head -1)"
-  [[ -n "$bin" ]] || bin="$(find /tmp -maxdepth 1 -type f -name infisical 2>/dev/null | head -1)"
+  [[ "$arch" == "amd64" || "$arch" == "arm64" ]] || die "unsupported arch: $arch"
+  tgz="$CACHE_DIR/doppler-cli_linux_${arch}.tar.gz"
+  download "https://packages.doppler.com/public/cli/raw/names/doppler-cli/files/latest/doppler-cli_linux_${arch}.tar.gz" "$tgz"
   # extract to temp dir cleanly
   local tmpd
   tmpd="$(mktemp -d)"
   tar -C "$tmpd" -xzf "$tgz"
-  bin="$(find "$tmpd" -type f -name infisical | head -1)"
-  [[ -n "$bin" ]] || die "infisical binary not found in tarball"
-  install -m 755 "$bin" "$LOCAL_BIN/infisical"
+  local bin
+  bin="$(find "$tmpd" -type f -name doppler | head -1)"
+  [[ -n "$bin" ]] || die "doppler binary not found in tarball"
+  install -m 755 "$bin" "$LOCAL_BIN/doppler"
   rm -rf "$tmpd"
-  ok "infisical $($LOCAL_BIN/infisical --version | head -1)"
+  ok "doppler $($LOCAL_BIN/doppler --version | head -1)"
 }
 
 install_docker() {
@@ -551,7 +546,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun python3 docker flutter herdr infisical direnv starship; do
+    for c in git curl gh jq rg fd fzf uv node npm bun python3 docker flutter herdr doppler direnv starship; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -659,7 +654,7 @@ main() {
     install_typescript
     install_direnv
     install_starship
-    [[ "$WITH_INFISICAL" == "1" ]] && install_infisical
+    [[ "$WITH_DOPPLER" == "1" ]] && install_doppler
     install_go
     install_opencode
   fi
@@ -690,7 +685,7 @@ ${C_BOLD}Next steps${C_RESET}
   2. Run:  ${C_CYAN}devkit doctor${C_RESET}
   3. Login tools you need:
        gh auth login
-       infisical login
+       doppler configure set token "\$DOPPLER_TOKEN"   # dari ~/.devkit.env
   4. New project:
        devkit new web my-app
        devkit new mobile my_app
