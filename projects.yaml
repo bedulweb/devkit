@@ -1,94 +1,200 @@
-# Multi-repo per product (org)
-# Path rule: ~/projects/apps/<org>/<repo>
-#
-# Examples:
-#   ~/projects/apps/wabase/core
-#   ~/projects/apps/wazapin/platform
-#   ~/projects/apps/wazapin/web
-#   ~/projects/apps/usebetterpay/betterpay
-
 version: 1
-
 workspace_root: ~/projects
-
 defaults:
   branch: main
   post_clone: []
-
 projects:
-  # ── wabase/* ─────────────────────────────────────────────
   wabase-core:
     path: apps/wabase/core
     repo: https://github.com/wabase/core.git
     branch: main
     stack: bun
-    description: "Wabase core API/service"
+    description: Wabase core API/service
     org: wabase
     pm2: wabase-core
     port: 3001
     infisical: wabase
-    tags: [wabase, product]
-
-  # Tambah repo wabase lain di sini, contoh:
-  # wabase-web:
-  #   path: apps/wabase/web
-  #   repo: https://github.com/wabase/web.git
-  #   org: wabase
-  #   stack: bun
-  #   pm2: wabase-web
-  #   port: 3002
-  #   infisical: wabase
-
-  # ── wazapin/* ────────────────────────────────────────────
+    tags:
+    - wabase
+    - product
+  wabase-broadcastwa:
+    path: apps/wabase/broadcastwa
+    repo: https://github.com/wabase/broadcastwa.git
+    branch: main
+    stack: bun
+    description: Wabase WhatsApp broadcast worker/service
+    org: wabase
+    pm2: wabase-broadcastwa
+    infisical: wabase
+    tags:
+    - wabase
+    - product
+    - whatsapp
   wazapin-platform:
     path: apps/wazapin/platform
     repo: https://github.com/wazapin/platform.git
     branch: main
     stack: bun
-    description: "Wazapin platform"
+    description: Wazapin platform
     org: wazapin
     pm2: wazapin-platform
     port: 3101
     infisical: wazapin
-    tags: [wazapin, product]
-
+    tags:
+    - wazapin
+    - product
   wazapin-web:
     path: apps/wazapin/web
     repo: https://github.com/wazapin/web.git
     branch: main
     stack: bun
-    description: "Wazapin web"
+    description: Wazapin web
     org: wazapin
     pm2: wazapin-web
     port: 3102
     infisical: wazapin
-    tags: [wazapin, product, web]
-
-  # ── usebetterpay/* ───────────────────────────────────────
+    tags:
+    - wazapin
+    - product
+    - web
   betterpay:
     path: apps/usebetterpay/betterpay
     repo: https://github.com/usebetterpay/betterpay.git
     branch: main
     stack: bun
-    description: "Betterpay"
+    description: BetterPay OSS library monorepo (packages + docs)
     org: usebetterpay
     pm2: betterpay
     port: 3201
     infisical: betterpay
-    tags: [betterpay, product]
-
-# Layout on every machine:
-#
-# ~/projects/apps/
-#   wabase/
-#     core/              ← wabase/core
-#     web/               ← wabase/web (when you add it)
-#   wazapin/
-#     platform/          ← wazapin/platform
-#     web/               ← wazapin/web
-#   usebetterpay/
-#     betterpay/         ← usebetterpay/betterpay
-#
-# Add new repo under same org:
-#   devkit add wabase-api https://github.com/wabase/api.git \
-#     --path apps/wabase/api --stack bun
+    tags:
+    - usebetterpay
+    - betterpay
+    - product
+    - library
+  withliaid-sfi:
+    path: apps/withliaid/sfi
+    repo: https://github.com/withliaid/sfi.git
+    branch: master
+    stack: bun
+    description: SFI - Intel Educator & Feedback Intelligence Dashboard (Hono API
+      + Vite Frontend)
+    org: withliaid
+    pm2: withliaid-sfi
+    port: 3301
+    infisical: withliaid
+    tags:
+    - withliaid
+    - product
+    - sfi
+    - dashboard
+  usebetterpay-demo:
+    path: apps/usebetterpay/demo
+    repo: https://github.com/usebetterpay/demo.git
+    branch: main
+    stack: node
+    description: BetterPay live demo (demo.betterpay.dev)
+    org: usebetterpay
+    pm2: betterpay-dogfood
+    port: 8791
+    infisical: betterpay
+    tags:
+    - usebetterpay
+    - product
+    - demo
+  usebetterpay-web:
+    path: apps/usebetterpay/web
+    repo: https://github.com/usebetterpay/web.git
+    branch: main
+    stack: node
+    description: BetterPay marketing landing (betterpay.dev)
+    org: usebetterpay
+    pm2: usebetterpay-web
+    port: 4321
+    infisical: betterpay
+    tags:
+    - usebetterpay
+    - product
+    - web
+    - landing
+  smarzban-herdr-file-viewer:
+    path: apps/smarzban/herdr-file-viewer
+    repo: https://github.com/smarzban/herdr-file-viewer.git
+    branch: main
+    stack: bun
+    description: smarzban-herdr-file-viewer
+    org: smarzban
+    pm2: smarzban-herdr-file-viewer
+    tags:
+    - smarzban
+    - product
+  fullerzz-herdr-plugin-sesh:
+    path: apps/fullerzz/herdr-plugin-sesh
+    repo: https://github.com/fullerzz/herdr-plugin-sesh.git
+    branch: main
+    stack: bun
+    description: fullerzz-herdr-plugin-sesh
+    org: fullerzz
+    pm2: fullerzz-herdr-plugin-sesh
+    tags:
+    - fullerzz
+    - product
+  devashish2203-herdr-worktrunk:
+    path: apps/devashish2203/herdr-worktrunk
+    repo: https://github.com/devashish2203/herdr-worktrunk.git
+    branch: main
+    stack: bun
+    description: devashish2203-herdr-worktrunk
+    org: devashish2203
+    pm2: devashish2203-herdr-worktrunk
+    tags:
+    - devashish2203
+    - product
+  competitor-co:
+    path: apps/competitor/co
+    repo: https://github.com/competitor/co.git
+    branch: main
+    stack: bun
+    description: competitor-co
+    org: competitor
+    pm2: competitor-co
+    tags:
+    - competitor
+    - product
+  justcleaning:
+    path: apps/justcleaning
+    repo: https://github.com/bedulweb/justcleaning-dev.git
+    branch: main
+    stack: node
+    description: JustCleaning - cleaning service platform (frontend + backend)
+    org: bedulweb
+    pm2: justcleaning
+    infisical: justcleaning
+    tags:
+    - justcleaning
+    - product
+  withlia:
+    path: apps/withlia/withlia-rs-clean
+    repo: https://github.com/withliaid/withlia.git
+    branch: main
+    stack: bun
+    description: WithLia - AI companion/productivity app monorepo
+    org: withliaid
+    pm2: withlia
+    infisical: withlia
+    tags:
+    - withlia
+    - product
+  aimentor:
+    path: apps/aimentor/aimentor
+    repo: https://github.com/trisnalesmana/aimentor.git
+    branch: main
+    stack: bun
+    description: Aimentor - AI mentor/education monorepo (trainerhub)
+    org: trisnalesmana
+    pm2: aimentor
+    infisical: aimentor
+    tags:
+    - aimentor
+    - product
+    - education
