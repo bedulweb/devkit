@@ -17,19 +17,6 @@ projects:
     tags:
     - wabase
     - product
-  wabase-broadcastwa:
-    path: apps/wabase/broadcastwa
-    repo: https://github.com/wabase/broadcastwa.git
-    branch: main
-    stack: bun
-    description: Wabase WhatsApp broadcast worker/service
-    org: wabase
-    pm2: wabase-broadcastwa
-    infisical: wabase
-    tags:
-    - wabase
-    - product
-    - whatsapp
   wazapin-platform:
     path: apps/wazapin/platform
     repo: https://github.com/wazapin/platform.git
@@ -150,24 +137,13 @@ projects:
     tags:
     - devashish2203
     - product
-  competitor-co:
-    path: apps/competitor/co
-    repo: https://github.com/competitor/co.git
-    branch: main
-    stack: bun
-    description: competitor-co
-    org: competitor
-    pm2: competitor-co
-    tags:
-    - competitor
-    - product
   justcleaning:
     path: apps/justcleaning
-    repo: https://github.com/bedulweb/justcleaning-dev.git
+    repo: https://github.com/withliaid/justcleaning.git
     branch: main
     stack: node
     description: JustCleaning - cleaning service platform (frontend + backend)
-    org: bedulweb
+    org: withliaid
     pm2: justcleaning
     infisical: justcleaning
     tags:
@@ -198,3 +174,124 @@ projects:
     - aimentor
     - product
     - education
+  ascentia:
+    path: apps/ascentia
+    repo: https://github.com/websee-id/ascentia.git
+    branch: main
+    stack: node
+    description: Ascentia - websee-id product
+    org: websee-id
+    pm2: ascentia
+    infisical: ascentia
+    tags:
+    - ascentia
+    - product
+  bentopdf:
+    path: apps/bentopdf
+    repo: https://github.com/alam00000/bentopdf.git
+    branch: main
+    stack: node
+    description: bentopdf - PDF tool (LibreOffice WASM on Cloudflare)
+    org: alam00000
+    pm2: bentopdf
+    infisical: bentopdf
+    tags:
+    - bentopdf
+    - product
+  customcraft:
+    path: apps/customcraft/customcraft
+    repo: https://github.com/websee-id/customcraft.git
+    branch: main
+    stack: node
+    description: CustomCraft - websee-id product
+    org: websee-id
+    pm2: customcraft
+    infisical: customcraft
+    tags:
+    - customcraft
+    - product
+  mail-duck:
+    path: apps/emilui
+    repo: https://github.com/bedulweb/mail-duck.git
+    branch: main
+    stack: node
+    description: Mail Duck - email generation app (Cloudflare Worker)
+    org: bedulweb
+    pm2: mail-duck
+    infisical: mail-duck
+    tags:
+    - mail-duck
+    - product
+  hono-email-gen:
+    path: apps/hono-email-gen
+    repo: https://github.com/bedulweb/hono-email-gen.git
+    branch: master
+    stack: node
+    description: Hono email generator
+    org: bedulweb
+    pm2: hono-email-gen
+    infisical: hono-email-gen
+    tags:
+    - hono-email-gen
+    - product
+  loka-points:
+    path: apps/loka-points
+    repo: https://github.com/websee-id/loka-points.git
+    branch: main
+    stack: node
+    description: Loka Points - websee-id product
+    org: websee-id
+    pm2: loka-points
+    infisical: loka-points
+    tags:
+    - loka-points
+    - product
+  orders:
+    path: apps/orders
+    repo: https://github.com/bedulweb/order.rs.git
+    branch: main
+    stack: rust
+    description: order.rs - order management (Rust)
+    org: bedulweb
+    pm2: orders
+    infisical: orders
+    tags:
+    - orders
+    - product
+    - rust
+  routeid:
+    path: apps/routeid
+    repo: https://github.com/bedulweb/routeid.git
+    branch: master
+    stack: node
+    description: RouteID - routing/id service
+    org: bedulweb
+    pm2: routeid
+    infisical: routeid
+    tags:
+    - routeid
+    - product
+  termio:
+    path: apps/termio
+    repo: https://github.com/termio-sh/termio.git
+    branch: main
+    stack: swift
+    description: Termio - terminal app (Swift)
+    org: termio-sh
+    pm2: termio
+    infisical: termio
+    tags:
+    - termio
+    - product
+  warp:
+    path: apps/warp
+    repo: https://github.com/bedulweb/warp.git
+    branch: fix/windows-foreground-activation
+    stack: rust
+    description: Warp terminal - contribution fork (Windows foreground activation)
+    org: bedulweb
+    pm2: warp
+    infisical: warp
+    tags:
+    - warp
+    - product
