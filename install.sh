@@ -382,7 +382,7 @@ install_doppler() {
   arch="$(arch_go)"
   [[ "$arch" == "amd64" || "$arch" == "arm64" ]] || die "unsupported arch: $arch"
   tgz="$CACHE_DIR/doppler-cli_linux_${arch}.tar.gz"
-  download "https://packages.doppler.com/public/cli/raw/names/doppler-cli/files/latest/doppler-cli_linux_${arch}.tar.gz" "$tgz"
+  download "https://cli.doppler.com/download?os=linux&arch=${arch}&format=tar" "$tgz"
   # extract to temp dir cleanly
   local tmpd
   tmpd="$(mktemp -d)"
