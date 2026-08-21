@@ -214,6 +214,9 @@ step_skills() {
     cp -f "$HOME/linux-devkit/.agents/skills/devkit/SKILL.md" "$HOME/.claude/skills/devkit/SKILL.md"
     ok "devkit skill installed globally"
   fi
+  if have grok && [[ -x "$HOME/linux-devkit/scripts/restore-grok.sh" ]]; then
+    "$HOME/linux-devkit/scripts/restore-grok.sh" || warn "Grok restore had errors"
+  fi
 }
 
 # ── step 7: install app deps (bun/npm) ──────────────────────────────────────

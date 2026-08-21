@@ -75,6 +75,12 @@ PY
     ;;
 
   restore)
+    if [[ -z "${GH_TOKEN:-}" && "${DEVKIT_WITH_GH_TOKEN:-}" != "1" ]] && \
+       doppler secrets get GH_TOKEN --project="${DEVKIT_DOPPLER_PROJECT:-developer-workstation}" --config="${DEVKIT_DOPPLER_CONFIG:-dev}" --plain >/dev/null 2>&1; then
+      askpass="$HOME/linux-devkit/scripts/git-askpass.sh"
+      exec env DEVKIT_WITH_GH_TOKEN=1 doppler run --project="${DEVKIT_DOPPLER_PROJECT:-developer-workstation}" --config="${DEVKIT_DOPPLER_CONFIG:-dev}" -- \
+        env GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 "$0" restore "$@"
+    fi
     need_yaml
     [[ -f "$REGISTRY" ]] || { echo "No registry at $REGISTRY"; exit 1; }
     ONLY="${1:-}"
@@ -187,6 +193,42 @@ print(f"Workspace: {root}")
 PY
     mkdir -p "$DEVKIT_HOME"
     cp -f "$REGISTRY" "$DEVKIT_HOME/projects.yaml" 2>/dev/null || true
+    if [[ -x "$HOME/linux-devkit/scripts/restore-grok.sh" ]] && command -v grok >/dev/null 2>&1; then
+      "$HOME/linux-devkit/scripts/restore-grok.sh" || echo "  ! Grok restore failed" >&2
+    fi
+    ;;
+
+  restore-grok)
+    exec "$HOME/linux-devkit/scripts/restore-grok.sh"
+    ;;
+
+  set-cloudflare-token)
+    command -v doppler >/dev/null 2>&1 || { echo "Doppler CLI is required." >&2; exit 1; }
+    read -r -s -p "Cloudflare API token (input hidden): " token
+    printf '\n'
+    [[ -n "$token" ]] || { echo "Token cannot be empty." >&2; exit 1; }
+    printf '%s' "$token" | doppler secrets set CLOUDFLARE_API_TOKEN --project="${INFRA_DOPPLER_PROJECT:-infrastructure}" --config="${INFRA_DOPPLER_CONFIG:-dev}" --no-interactive >/dev/null
+    unset token
+    echo "CLOUDFLARE_API_TOKEN saved in infrastructure/dev."
+    ;;
+
+  set-gh-token)
+    command -v doppler >/dev/null 2>&1 || { echo "Doppler CLI is required." >&2; exit 1; }
+    read -r -s -p "GitHub PAT (input hidden): " token
+    printf '\n'
+    [[ -n "$token" ]] || { echo "Token cannot be empty." >&2; exit 1; }
+    printf '%s' "$token" | doppler secrets set GH_TOKEN --project="${DEVKIT_DOPPLER_PROJECT:-developer-workstation}" --config="${DEVKIT_DOPPLER_CONFIG:-dev}" --no-interactive >/dev/null
+    unset token
+    "$HOME/linux-devkit/scripts/github-auth.sh" --check >/dev/null
+    echo "GH_TOKEN saved and verified in developer-workstation/dev."
+    ;;
+
+  github-auth)
+    exec "$HOME/linux-devkit/scripts/github-auth.sh" "$@"
+    ;;
+
+  push)
+    exec "$HOME/linux-devkit/scripts/github-auth.sh" git push "$@"
     ;;
 
   add)
@@ -289,6 +331,11 @@ devkit — multi-project / multi-VPS helper
   devkit restore             clone/pull ALL projects
   devkit restore NAME        restore one project
   devkit path NAME           print project directory
+  devkit restore-grok        restore Grok config and AI for UI from Doppler
+  devkit set-gh-token        securely save a GitHub PAT in Doppler
+  devkit set-cloudflare-token securely save a Cloudflare API token in Doppler
+  devkit github-auth CMD     run a GitHub command with the Doppler PAT
+  devkit push [ARGS]         git push with the Doppler PAT
   devkit sync-registry       copy projects.yaml → ~/.linux-devkit/
   devkit new web|api|mobile|python NAME
 

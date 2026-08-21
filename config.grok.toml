@@ -1,0 +1,521 @@
+disabled_mcp_servers = ["codebase-memory-mcp"]
+
+[cli]
+installer = "internal"
+show_tips = true
+
+[ui]
+max_thoughts_width = 120
+fork_secondary_model = "pinkgreen-grok-composer"
+yolo = false
+compact_mode = true
+permission_mode = "always-approve"
+theme = "groknight"
+vim_mode = false
+show_thinking_blocks = true
+show_timestamps = true
+screen_mode = "fullscreen"
+show_timeline = true
+render_mermaid = "on"
+
+[models]
+default = "pinkgreen-cx-gpt-5.6-terra"
+default_reasoning_effort = "medium"
+disabled_models = []
+
+[mcp_servers.context7]
+command = "bunx"
+args = [
+    "-y",
+    "@upstash/context7-mcp",
+    "--api-key",
+    "${CONTEXT7_API_KEY}",
+]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.firecrawl-mcp]
+command = "bunx"
+args = [
+    "-y",
+    "firecrawl-mcp",
+]
+enabled = true
+
+[mcp_servers.firecrawl-mcp.env]
+FIRECRAWL_API_KEY = "${FIRECRAWL_API_KEY}"
+
+[mcp_servers.framelink]
+command = "bunx"
+args = [
+    "-y",
+    "figma-developer-mcp",
+    "--figma-api-key=${FIGMA_API_KEY}",
+    "--stdio",
+]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.framelink.env]
+FIGMA_API_KEY = "${FIGMA_API_KEY}"
+npm_config_yes = "true"
+
+[mcp_servers.assistant-ui]
+command = "bunx"
+args = [
+    "-y",
+    "@assistant-ui/mcp-docs-server",
+]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.hugeicons]
+command = "bunx"
+args = [
+    "-y",
+    "@hugeicons/mcp-server",
+]
+enabled = true
+
+[mcp_servers.morph-mcp]
+command = "${HOME}/.pi/agent/bin/morph-mcp.sh"
+args = []
+enabled = true
+
+[mcp_servers.morph-mcp.env]
+MORPH_API_KEY = "${MORPH_API_KEY}"
+
+[mcp_servers.drawio]
+url = "https://mcp.draw.io/mcp"
+enabled = true
+
+[mcp_servers.exa]
+url = "https://mcp.exa.ai/mcp?exaApiKey=${EXA_API_KEY}&tools=web_search_exa,web_search_advanced_exa,web_fetch_exa,deep_researcher_start,deep_researcher_check"
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 600
+
+[mcp_servers.filesystem]
+command = "bunx"
+args = [
+    "-y",
+    "@modelcontextprotocol/server-filesystem",
+    "${HOME}/projects",
+    "${HOME}/linux-devkit",
+]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.mobbin]
+url = "https://api.mobbin.com/mcp"
+enabled = true
+
+[mcp_servers.mobbin.headers]
+Authorization = "Bearer ${MOBBIN_API_TOKEN}"
+
+[mcp_servers.codebase-memory-mcp]
+command = "/home/ujang/.local/bin/codebase-memory-mcp"
+args = []
+enabled = false
+
+[mcp_servers.rams]
+url = "https://worker.rams.ai/mcp"
+enabled = true
+
+[mcp_servers.rams.headers]
+Authorization = "Bearer ${RAMS_API_KEY}"
+
+[marketplace]
+official_marketplace_auto_installed = true
+default_skills_installs_purged = true
+
+[[marketplace.sources]]
+name = "xAI Official"
+git = "https://github.com/xai-org/plugin-marketplace.git"
+
+[plugins]
+enabled = [
+    "firecrawl",
+    "chrome-devtools-mcp",
+    "superpowers",
+]
+
+[features]
+telemetry = false
+feedback = false
+
+[telemetry]
+mixpanel_enabled = false
+trace_upload = false
+
+[session]
+auto_compact_threshold_percent = 80
+
+[model."pinkgreen-grok-4.5"]
+model = "grok-4.5"
+base_url = "https://x.pinkgreen.me/v1"
+env_key = "PINKGREEN_GROK_45_API_KEY"
+name = "PinkGreen · Grok 4.5"
+description = "Grok 4.5 via x.pinkgreen.me (g2a) — 500k ctx"
+api_backend = "chat_completions"
+context_window = 500000
+max_completion_tokens = 64000
+auto_compact_threshold_percent = 80
+reasoning_effort = "xhigh"
+supports_reasoning_effort = true
+system_prompt_label = "Grok 4.5"
+show_model_fingerprint = true
+supports_backend_search = true
+use_concise = false
+agent_type = "grok-build-plan"
+
+[[model."pinkgreen-grok-4.5".reasoning_efforts]]
+value = "xhigh"
+label = "XHigh"
+description = "Maximum reasoning depth"
+default = true
+
+[[model."pinkgreen-grok-4.5".reasoning_efforts]]
+value = "high"
+label = "High"
+description = "Highest quality, extensive reasoning"
+
+[[model."pinkgreen-grok-4.5".reasoning_efforts]]
+value = "medium"
+label = "Medium"
+description = "Balanced effort"
+
+[[model."pinkgreen-grok-4.5".reasoning_efforts]]
+value = "low"
+label = "Low"
+description = "Fast, lighter reasoning"
+
+[model.pinkgreen-grok-composer]
+model = "xai/composer-2.5"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_COMPOSER_API_KEY"
+name = "PinkGreen · Composer 2.5"
+description = "Composer 2.5 via ai.pinkgreen.me — 200k ctx"
+api_backend = "chat_completions"
+context_window = 200000
+max_completion_tokens = 64000
+auto_compact_threshold_percent = 90
+supports_reasoning_effort = false
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "cursor"
+
+[model."pinkgreen-cx-gpt-5.6-terra"]
+model = "cx/gpt-5.6-terra"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · GPT-5.6 Terra"
+description = "GPT-5.6 Terra via ai.pinkgreen.me — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1050000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 75
+reasoning_effort = "xhigh"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model."pinkgreen-cx-gpt-5.6-luna"]
+model = "cx/gpt-5.6-luna"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · GPT-5.6 Luna"
+description = "GPT-5.6 Luna via ai.pinkgreen.me — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1050000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 85
+reasoning_effort = "high"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model."pinkgreen-cx-gpt-5.5"]
+model = "cx/gpt-5.5"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · GPT-5.5"
+description = "GPT-5.5 via ai.pinkgreen.me — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1050000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 85
+reasoning_effort = "xhigh"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model."qwen3.8-max"]
+model = "qwen3.8-max"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "QT · Qwen 3.8 Max"
+description = "Qwen 3.8 Max via PinkGreen proxy — 1M ctx, reasoning (qt provider, verified working)"
+api_backend = "chat_completions"
+context_window = 1000000
+reasoning_effort = "high"
+supports_reasoning_effort = true
+max_completion_tokens = 131072
+
+[model."qwen3.7-max"]
+model = "qwen3.7-max"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "OCG · Qwen 3.7 Max"
+description = "Qwen 3.7 Max via PinkGreen proxy — reasoning (ocg provider, verified working)"
+api_backend = "chat_completions"
+context_window = 1000000
+reasoning_effort = "high"
+supports_reasoning_effort = true
+max_completion_tokens = 131072
+
+[model."glm-5.2"]
+model = "glm-5.2"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · GLM-5.2"
+description = "GLM-5.2 via RouteID proxy (dashscope) — multi-key fallback"
+api_backend = "chat_completions"
+context_window = 1040000
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "GLM-5.2"
+agent_type = "grok-build-plan"
+
+[model."pinkgreen-qt-qwen3.8-max"]
+model = "qt/qwen3.8-max"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · Qwen3.8 Max Preview"
+description = "Qwen3.8 Max Preview via ai.pinkgreen.me — ~1M ctx"
+api_backend = "chat_completions"
+context_window = 991800
+max_completion_tokens = 65536
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "Qwen3.8 Max"
+agent_type = "grok-build-plan"
+
+[model."pinkgreen-qt-glm-5.2"]
+model = "qt/glm-5.2"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · GLM-5.2"
+description = "GLM-5.2 via ai.pinkgreen.me — 1.04M ctx"
+api_backend = "chat_completions"
+context_window = 1040000
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "GLM-5.2"
+agent_type = "grok-build-plan"
+
+[model.pinkgreen-ollama-minimax-m3]
+model = "ollama/minimax-m3"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_OLLAMA_API_KEY"
+name = "PinkGreen · MiniMax M3"
+description = "Ollama MiniMax-M3 via ai.pinkgreen.me — 1M ctx, multimodal, coding & agentic"
+api_backend = "chat_completions"
+context_window = 1000000
+max_completion_tokens = 65536
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model.pinkgreen-ocg-deepseek-v4-flash]
+model = "ocg/deepseek-v4-flash"
+base_url = "https://ai.pinkgreen.me/v1"
+env_key = "PINKGREEN_API_KEY"
+name = "PinkGreen · DeepSeek V4 Flash"
+description = "DeepSeek V4 Flash via ai.pinkgreen.me — 1M ctx, MoE 284B (13B active)"
+api_backend = "chat_completions"
+context_window = 1000000
+max_completion_tokens = 65536
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = true
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "DeepSeek V4 Flash"
+agent_type = "grok-build-plan"
+
+[model."routeid-muse-spark-1.2"]
+model = "muse-spark-1.2"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · Muse Spark 1.2"
+description = "Muse Spark 1.2 via RouteID proxy (api.meta.ai, 10-key rotation) — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1048576
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "Muse Spark 1.2"
+agent_type = "grok-build-plan"
+
+[model."routeid-muse-spark-1.2-contributor"]
+model = "muse-spark-1.2-contributor"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · Muse Spark 1.2 Contributor"
+description = "Muse Spark 1.2 Contributor via RouteID proxy (api.meta.ai, 10-key rotation) — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1048576
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = false
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "Muse Spark 1.2 Contributor"
+agent_type = "grok-build-plan"
+
+[model.routeid-deepseek-v4-flash]
+model = "ocg/deepseek-v4-flash"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · DeepSeek V4 Flash"
+description = "DeepSeek V4 Flash via RouteID → ai.pinkgreen.me — 1M ctx"
+api_backend = "chat_completions"
+context_window = 1000000
+max_completion_tokens = 65536
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = true
+supports_backend_search = false
+show_model_fingerprint = false
+use_concise = false
+system_prompt_label = "DeepSeek V4 Flash"
+agent_type = "grok-build-plan"
+
+[model."routeid-gpt-5.6-luna"]
+model = "cx/gpt-5.6-luna"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · GPT-5.6 Luna"
+description = "GPT-5.6 Luna via RouteID → ai.pinkgreen.me — 272k ctx"
+api_backend = "chat_completions"
+context_window = 272000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 85
+reasoning_effort = "high"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model."routeid-gpt-5.6-terra"]
+model = "cx/gpt-5.6-terra"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · GPT-5.6 Terra"
+description = "GPT-5.6 Terra via RouteID → ai.pinkgreen.me — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1050000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 75
+reasoning_effort = "xhigh"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model."routeid-gpt-5.6-sol"]
+model = "cx/gpt-5.6-sol"
+base_url = "https://routeid.trainerhub.workers.dev/v1"
+env_key = "ROUTEID_ADMIN_TOKEN"
+name = "RouteID · GPT-5.6 Sol"
+description = "GPT-5.6 Sol via RouteID → ai.pinkgreen.me — 272k ctx"
+api_backend = "chat_completions"
+context_window = 272000
+max_completion_tokens = 128000
+auto_compact_threshold_percent = 85
+reasoning_effort = "high"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+
+[model.muse]
+model = "muse-spark-1.2"
+base_url = "https://api.meta.ai/v1"
+env_key = "MUSE_API_KEY"
+name = "Muse"
+description = "Muse Spark 1.2 via Meta Model API — 1.05M ctx, reasoning"
+api_backend = "chat_completions"
+context_window = 1048576
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+reasoning_effort = "high"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+system_prompt_label = "Muse Spark 1.2"
+
+[model."muse-spark-1.2"]
+model = "muse-spark-1.2"
+base_url = "https://api.meta.ai/v1"
+env_key = "MUSE_API_KEY"
+name = "Muse Spark 1.2"
+description = "Muse Spark 1.2 via Meta Model API — 1.05M ctx (direct)"
+api_backend = "chat_completions"
+context_window = 1048576
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+reasoning_effort = "high"
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+system_prompt_label = "Muse Spark 1.2"
+
+[model."muse-spark-1.2-contributor"]
+model = "muse-spark-1.2-contributor"
+base_url = "https://api.meta.ai/v1"
+env_key = "MUSE_API_KEY"
+name = "Muse Spark 1.2 Contributor"
+description = "Muse Spark 1.2 Contributor via Meta Model API — 1.05M ctx"
+api_backend = "chat_completions"
+context_window = 1048576
+max_completion_tokens = 131072
+auto_compact_threshold_percent = 85
+supports_reasoning_effort = true
+show_model_fingerprint = false
+supports_backend_search = false
+use_concise = false
+agent_type = "grok-build-plan"
+system_prompt_label = "Muse Spark 1.2 Contributor"
