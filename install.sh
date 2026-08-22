@@ -30,6 +30,8 @@ WITH_DOPPLER=1
 NONINTERACTIVE=1
 ASSUME_YES=0
 SKIP_APT=0
+DEVKIT_GIT_USER_NAME="${DEVKIT_GIT_USER_NAME:-bedulweb}"
+DEVKIT_GIT_USER_EMAIL="${DEVKIT_GIT_USER_EMAIL:-ujangas1908@gmail.com}"
 
 # ── colors ────────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -120,6 +122,12 @@ if [[ "${DEVKIT_WITH_HERDR:-}" == "0" ]]; then WITH_HERDR=0; fi
 ensure_dirs() {
   mkdir -p "$LOCAL_BIN" "$CACHE_DIR" "$DEVKIT_HOME" \
     "$HOME/.config" "$HOME/.local/share/man/man1"
+}
+
+configure_git_identity() {
+  git config --global user.name "$DEVKIT_GIT_USER_NAME"
+  git config --global user.email "$DEVKIT_GIT_USER_EMAIL"
+  ok "Git identity → ${DEVKIT_GIT_USER_NAME} <${DEVKIT_GIT_USER_EMAIL}>"
 }
 
 ensure_path_snippet() {
@@ -624,7 +632,7 @@ runcmd:
     # if cloud-init runs as root, install for the first non-root user
     U=\$(getent passwd 1000 | cut -d: -f1 || true)
     if [ -n "\$U" ]; then
-      sudo -u "\$U" -H bash -lc 'curl -fsSL https://raw.githubusercontent.com/REPLACE_ME/linux-devkit/main/install.sh | bash -s -- --profile default --with-docker -y'
+      sudo -u "\$U" -H bash -lc 'curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/install.sh | bash -s -- --profile default --with-docker -y'
     fi
 EOF
   ok "cloud-init snippet → $DEVKIT_HOME/cloud-init-snippet.yaml"
@@ -637,6 +645,7 @@ main() {
   need_cmd tar
   ensure_dirs
   ensure_path_snippet
+  configure_git_identity
 
   install_apt_base
 

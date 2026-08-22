@@ -51,7 +51,7 @@ write_files:
       else
         # TODO: ganti URL ke raw GitHub / gist / object storage kamu
         sudo -u "$U" -H bash -lc \
-          'curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/install.sh | bash -s -- --profile default --with-docker -y'
+          'curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/install.sh | bash -s -- --profile default --with-docker -y'
       fi
 
 runcmd:
