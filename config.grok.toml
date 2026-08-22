@@ -77,6 +77,16 @@ args = [
 ]
 enabled = true
 
+[mcp_servers.agentation]
+command = "npx"
+args = [
+    "-y",
+    "agentation-mcp",
+    "server",
+]
+enabled = true
+startup_timeout_sec = 60
+
 [mcp_servers.morph-mcp]
 command = "${HOME}/.pi/agent/bin/morph-mcp.sh"
 args = []

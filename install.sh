@@ -359,6 +359,14 @@ install_bun() {
   ok "bun $(bun --version)"
 }
 
+install_wrangler() {
+  if have wrangler; then ok "wrangler $(wrangler --version)"; return; fi
+  log "install Wrangler (Cloudflare CLI)"
+  bun add --global wrangler
+  export PATH="$(bun pm bin -g):$PATH"
+  ok "wrangler $(wrangler --version)"
+}
+
 install_direnv() {
   if have direnv; then ok "direnv $(direnv version)"; return; fi
   log "install direnv"
@@ -554,7 +562,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun python3 docker flutter herdr doppler direnv starship; do
+    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler direnv starship; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -660,6 +668,7 @@ main() {
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun
+    install_wrangler
     install_typescript
     install_direnv
     install_starship

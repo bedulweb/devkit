@@ -2,7 +2,7 @@
 
 Installer + multi-project workspace for disposable Linux VPs.
 
-- **Tools:** Bun, TypeScript 7, Go, PM2, Doppler, gh, modern CLI
+- **Tools:** Bun, TypeScript 7, Wrangler, Go, PM2, Doppler, gh, modern CLI
 - **Projects:** `~/projects/apps/<org>/<repo>` via `projects.yaml`
 - **Agents:** global skills pack (`npx skills`) + skill `devkit`
 - **Secrets:** Doppler (not in this repo)
@@ -53,7 +53,7 @@ devkit add org-repo https://github.com/org/repo.git --path apps/org/repo --stack
 | Profile | Contents |
 |---------|----------|
 | minimal | core CLI + bun/go basics |
-| default | + herdr, Doppler, agents tools, skills pack |
+| default | + Bun, TypeScript 7, Wrangler, Herdr, Doppler, agent tools, and skills pack |
 | full | + docker/flutter/ccgram hooks |
 
 ## Skills

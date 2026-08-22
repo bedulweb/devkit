@@ -94,7 +94,7 @@ devkit list
 
 - Doppler: `CLOUDFLARE_API_TOKEN` (+ optional `CLOUDFLARE_ACCOUNT_ID`)
 - Prefer API token env over `wrangler login` OAuth on VPS
-- `doppler run --project=<slug> --config=dev -- bunx wrangler deploy` from project dir
+- `doppler run --project=<slug> --config=dev -- wrangler deploy` from project dir
 
 ## PM2 + Neon
 

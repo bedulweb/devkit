@@ -287,7 +287,7 @@ ${B}With Doppler secrets${Z}
   cd "\$(devkit path wabase-core)"
   doppler run --project=wabase-core --config=${DOPPLER_CONFIG:-dev} -- bun run dev
   # Cloudflare:
-  doppler run --project=wabase-core --config=${DOPPLER_CONFIG:-dev} -- bunx wrangler deploy
+  doppler run --project=wabase-core --config=${DOPPLER_CONFIG:-dev} -- wrangler deploy
 
 ${B}PM2 (after you have a start script)${Z}
   cd "\$(devkit path wabase-core)"
