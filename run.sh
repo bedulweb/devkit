@@ -13,6 +13,8 @@
 #   DOPPLER_TOKEN                     Doppler service token (dp.st.xxx)
 #   DOPPLER_PROJECT                   project default (mis. wazapin-platform)
 #   DOPPLER_CONFIG                    config default (dev|stg|prd)
+#   DEVKIT_GITHUB_DOPPLER_PROJECT     config containing GITHUB_TOKEN (default: vendor-access)
+#   DEVKIT_GITHUB_DOPPLER_CONFIG      config containing GITHUB_TOKEN (default: prd)
 #   DEVKIT_PROFILE                    minimal|default|full  (default: default)
 #   DEVKIT_WITH_DOCKER                0|1  (default: 0)
 #   DEVKIT_WITH_HERDR                 0|1  (default: 1 for default/full profile)
@@ -21,6 +23,8 @@
 #   DEVKIT_KIT_REPO                   default: https://github.com/ujang19/devkit.git
 # =============================================================================
 set -euo pipefail
+
+DEVKIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── colors ──────────────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -114,6 +118,22 @@ step_install() {
 step_github() {
   log "3/7  GitHub access (private repos)"
 
+  local github_project="${DEVKIT_GITHUB_DOPPLER_PROJECT:-vendor-access}"
+  local github_config="${DEVKIT_GITHUB_DOPPLER_CONFIG:-prd}"
+  local helper_installer="$DEVKIT_DIR/scripts/install-git-credential-helper.sh"
+
+  if have doppler && [[ -x "$helper_installer" ]] && \
+    doppler run --project="$github_project" --config="$github_config" -- \
+      sh -c 'test -n "${GITHUB_TOKEN:-${GH_TOKEN:-}}"' >/dev/null 2>&1; then
+    "$helper_installer"
+    local user
+    user="$(doppler run --project="$github_project" --config="$github_config" -- \
+      gh api user --jq .login 2>/dev/null || true)"
+    [[ -n "$user" ]] && ok "GitHub user: $user"
+    ok "GitHub Git credentials → Doppler ${github_project}/${github_config}"
+    return 0
+  fi
+
   if [[ -n "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]]; then
     export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
     export GITHUB_TOKEN="${GITHUB_TOKEN:-$GH_TOKEN}"
@@ -124,8 +144,6 @@ step_github() {
       # ensure git uses gh helper
       gh auth setup-git 2>/dev/null || true
     fi
-    # HTTPS clone fallback with token (if gh helper missing)
-    git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/" 2>/dev/null || true
     ok "using GH_TOKEN / GITHUB_TOKEN from environment"
     if have gh; then
       local user
@@ -141,8 +159,9 @@ step_github() {
     return 0
   fi
 
-  warn "No GH_TOKEN and gh not logged in."
+  warn "No Doppler GitHub token or GH_TOKEN found."
   warn "Public repos will restore; private (wabase/wazapin) need:"
+  warn "  DOPPLER_TOKEN=dp.st.xxx (config ${github_project}/${github_config})"
   warn "  export GH_TOKEN=github_pat_xxx"
   warn "  # then re-run: bash ~/linux-devkit/run.sh"
 }
@@ -156,9 +175,15 @@ step_doppler() {
     return 0
   fi
 
+  if doppler whoami >/dev/null 2>&1; then
+    ok "Doppler authenticated"
+    doppler whoami 2>/dev/null | head -12 || true
+    return 0
+  fi
+
   local tok="${DOPPLER_TOKEN:-}"
   if [[ -z "$tok" ]]; then
-    warn "DOPPLER_TOKEN not set — skip (isi di ~/.devkit.env)"
+    warn "DOPPLER_TOKEN not set and Doppler is not authenticated — skip (isi di ~/.devkit.env)"
     warn "  DOPPLER_TOKEN=dp.st.xxx"
     warn "  DOPPLER_PROJECT=wazapin-platform"
     warn "  DOPPLER_CONFIG=dev"
@@ -166,17 +191,12 @@ step_doppler() {
   fi
 
   export DOPPLER_TOKEN
+  printf '%s\n' "$tok" | doppler configure set token 2>/dev/null || true
   if doppler whoami >/dev/null 2>&1; then
-    ok "Doppler authenticated"
+    ok "Doppler authenticated (token dikonfigurasi)"
     doppler whoami 2>/dev/null | head -12 || true
   else
-    doppler configure set token "$tok" 2>/dev/null || true
-    if doppler whoami >/dev/null 2>&1; then
-      ok "Doppler authenticated (token dikonfigurasi)"
-      doppler whoami 2>/dev/null | head -12 || true
-    else
-      warn "Doppler auth gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
-    fi
+    warn "Doppler auth gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
   fi
 }
 
@@ -257,7 +277,7 @@ step_verify() {
       ok "$key → $path"
       okc=$((okc + 1))
     else
-      warn "$key missing (private? set GH_TOKEN and re-run restore)"
+      warn "$key missing (private? set DOPPLER_TOKEN or GH_TOKEN and re-run restore)"
       failc=$((failc + 1))
     fi
   done
@@ -306,6 +326,10 @@ ${B}Env file (optional)${Z}
   # edit secrets, then: bash ~/linux-devkit/run.sh
 
 ${B}If private clone failed${Z}
+  # preferred: Doppler service token containing GITHUB_TOKEN
+  export DOPPLER_TOKEN=dp.st.xxx
+  bash ~/linux-devkit/run.sh
+  # fallback: direct GitHub PAT
   export GH_TOKEN=github_pat_xxx
   devkit restore
 
@@ -321,8 +345,8 @@ main() {
   ensure_git
   step_kit
   step_install
-  step_github
   step_doppler
+  step_github
   step_restore
   step_skills
   step_deps

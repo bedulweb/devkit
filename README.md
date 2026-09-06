@@ -7,12 +7,25 @@ Installer + multi-project workspace for disposable Linux VPs.
 - **Agents:** global skills pack (`npx skills`) + skill `devkit`
 - **Secrets:** Doppler (not in this repo)
 
+GitHub HTTPS credentials can be supplied from Doppler without storing a GitHub
+token in `~/.gitconfig`:
+
+```bash
+bash ~/linux-devkit/scripts/install-git-credential-helper.sh
+git pull
+```
+
+The helper reads `GITHUB_TOKEN` from `vendor-access/prd` by default. Override
+with `DEVKIT_GITHUB_DOPPLER_PROJECT` and `DEVKIT_GITHUB_DOPPLER_CONFIG`.
+
 ## New VM (one shot)
 
 ```bash
-# optional for private app repos:
-export GH_TOKEN=github_pat_xxx
+# recommended for private app repos: a read-only Doppler service token
 export DOPPLER_TOKEN=dp.st.xxx
+
+# optional fallback: direct GitHub PAT
+# export GH_TOKEN=github_pat_xxx
 
 curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/bootstrap-vps.sh | bash
 ```
