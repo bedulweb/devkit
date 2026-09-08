@@ -26,6 +26,9 @@ SOURCES=(
   "shadcn/improve|STAR|shadcn-improve"
   "https://github.com/jakubantalik/transitions-dev|transitions-dev|transitions-dev"
   "pbakaus/impeccable|STAR|impeccable"
+  "https://github.com/vercel-labs/agent-browser|agent-browser|agent-browser"
+  "https://github.com/jakubkrehel/skills|STAR|jakubkrehel-pack"
+  "https://github.com/jakubkrehel/make-interfaces-feel-better|make-interfaces-feel-better|feel-better"
 )
 
 add_one() {

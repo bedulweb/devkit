@@ -19,6 +19,13 @@ https://github.com/jakubantalik/transitions-dev --skill transitions-dev
 # --- Design quality ---
 pbakaus/impeccable --skill *
 
+# --- Browser automation (Vercel) ---
+https://github.com/vercel-labs/agent-browser --skill agent-browser
+
+# --- UI polish (jakubkrehel) ---
+https://github.com/jakubkrehel/skills --skill *
+https://github.com/jakubkrehel/make-interfaces-feel-better --skill make-interfaces-feel-better
+
 # --- Workspace (ours) ---
 # after install.sh places skill under ~/.agents/skills/devkit:
 # npx skills@latest add ~/.agents/skills --skill devkit -g -a '*' -y
