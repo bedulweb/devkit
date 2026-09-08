@@ -13,9 +13,6 @@ mattpocock/skills --skill *
 https://github.com/shadcn/ui --skill shadcn
 shadcn/improve --skill *
 
-# --- Superpowers (obra) ---
-obra/superpowers --skill *
-
 # --- Transitions ---
 https://github.com/jakubantalik/transitions-dev --skill transitions-dev
 

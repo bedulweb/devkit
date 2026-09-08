@@ -24,7 +24,6 @@ SOURCES=(
   "mattpocock/skills|STAR|matt-pack"
   "https://github.com/shadcn/ui|shadcn|shadcn"
   "shadcn/improve|STAR|shadcn-improve"
-  "obra/superpowers|STAR|superpowers"
   "https://github.com/jakubantalik/transitions-dev|transitions-dev|transitions-dev"
   "pbakaus/impeccable|STAR|impeccable"
 )

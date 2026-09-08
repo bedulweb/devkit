@@ -147,7 +147,6 @@ git = "https://github.com/xai-org/plugin-marketplace.git"
 enabled = [
     "firecrawl",
     "chrome-devtools-mcp",
-    "superpowers",
 ]
 
 [features]
