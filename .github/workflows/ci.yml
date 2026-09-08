@@ -1,0 +1,61 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash syntax
+        run: |
+          set -e
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -n1 bash -n
+          echo "bash -n OK"
+
+      - name: shellcheck (errors)
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: error
+
+      - name: python + yaml validation
+        run: |
+          python3 -c "import yaml" || sudo apt-get install -y python3-yaml
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+          for f in ['projects.yaml', 'cloud-init.yaml']:
+              yaml.safe_load(Path(f).read_text())
+              print(f'{f} OK')
+          PY
+
+      - name: repo tests
+        run: |
+          set -e
+          for t in tests/*.sh; do echo "== $t"; bash "$t"; done
+
+      - name: no stale repo references
+        run: |
+          set -e
+          if grep -rn 'ujang19/devkit' --include='*.sh' --include='*.md' --include='*.yaml' --include='*.yml' --include='*.txt' --include='*.toml' . | grep -v '.git/' | grep -v 'no stale repo references'; then
+            echo "FAIL: stale old-org reference found" >&2
+            exit 1
+          fi
+          echo "no stale refs OK"
+
+      - name: no secrets in repo
+        run: |
+          set -e
+          # Placeholders like dp.st.xxx / github_pat_xxx (<8 chars) are docs, not secrets.
+          # .devkit.env.example holds documented placeholders, not secrets.
+          if grep -rEn '(dp\.st\.[A-Za-z0-9]{8,}|github_pat_[A-Za-z0-9_]{8,}|ghp_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{10,}\.)' \
+              --include='*.sh' --include='*.md' --include='*.yaml' --include='*.yml' --include='*.txt' --include='*.toml' \
+              --exclude='.devkit.env.example' . \
+              | grep -v '.git/'; then
+            echo "FAIL: possible secret committed" >&2
+            exit 1
+          fi
+          echo "no secrets OK"
