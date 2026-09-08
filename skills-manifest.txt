@@ -1,30 +1,39 @@
 # Standard agent skills pack (global)
+# GENERATED MIRROR of scripts/install-skills.sh SOURCES (incl. #SHA pins).
+# Do not edit by hand — update SOURCES, then copy the pinned line here.
+# Checked by: tests/check-skills-manifest.sh
 # Install: bash scripts/install-skills.sh
-# Or: npx skills@latest add <source> -g -a '*' -y
+# Or: npx skills@latest add <source>#<sha> -g -a opencode -a claude-code -y
 
 # --- Design / motion (emilkowalski) ---
-emilkowalski/skills --skill *
+emilkowalski/skills#d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7 --skill *
 
 # --- Engineering workflows (mattpocock) ---
 # includes grill-me, diagnose, tdd, code-review, etc.
-mattpocock/skills --skill *
+mattpocock/skills#3cca18b368ae95cdbdebbff572ccafa662551015 --skill *
 
 # --- UI ---
-https://github.com/shadcn/ui --skill shadcn
-shadcn/improve --skill *
+https://github.com/shadcn/ui#5c7072da672b0048bc6771e3204063a2537df91a --skill shadcn
+shadcn/improve#03369ee6d7cafbfcecc4346539b05b3dc0a603bb --skill *
 
 # --- Transitions ---
-https://github.com/jakubantalik/transitions-dev --skill transitions-dev
+https://github.com/jakubantalik/transitions-dev#038b0bdc75375c2beed51d1e824c98cdc7b86f8c --skill transitions-dev
 
 # --- Design quality ---
-pbakaus/impeccable --skill *
+pbakaus/impeccable#2bc2879276c1f321a53c4ca99d3371e411329b52 --skill *
 
 # --- Browser automation (Vercel) ---
-https://github.com/vercel-labs/agent-browser --skill agent-browser
+https://github.com/vercel-labs/agent-browser#471ab3852b47b98847f1d9c855c272bb62d0d50b --skill agent-browser
 
 # --- UI polish (jakubkrehel) ---
-https://github.com/jakubkrehel/skills --skill *
-https://github.com/jakubkrehel/make-interfaces-feel-better --skill make-interfaces-feel-better
+https://github.com/jakubkrehel/skills#267330e1adfc66a718fb65fa6918c1f06d0a689e --skill *
+https://github.com/jakubkrehel/make-interfaces-feel-better#35545ea1512ad59fa463e6b1f95ca9c052981fe6 --skill make-interfaces-feel-better
+
+# --- aiforui.dev (token-gated, NOT via skills CLI) ---
+# Installed automatically by scripts/install-skills.sh when
+# AIFORUI_INSTALL_TOKEN exists in Doppler (developer-workstation/dev).
+# Manual: doppler run --project developer-workstation --config dev -- \
+#   sh -c 'npx -y @aiforui/install --token="$AIFORUI_INSTALL_TOKEN" --global -y'
 
 # --- Workspace (ours) ---
 # after install.sh places skill under ~/.agents/skills/devkit:
