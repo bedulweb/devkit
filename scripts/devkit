@@ -48,6 +48,9 @@ case "$cmd" in
       fi
     done
     echo
+    if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+      echo '  hint: non-interactive shell? export BASH_ENV="$HOME/.linux-devkit/env"'
+    fi
     echo "registry: $REGISTRY"
     [[ -f "$REGISTRY" ]] && echo "  ✓ found" || echo "  · missing"
     ;;
@@ -341,7 +344,7 @@ devkit — multi-project / multi-VPS helper
 
 Full VM setup:
   bash ~/linux-devkit/run.sh
-  # or: curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/run.sh | bash
+  # or: curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/run.sh | bash
 H
     ;;
 esac

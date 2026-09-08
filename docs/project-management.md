@@ -15,14 +15,14 @@ Setiap bulan ganti VPS → males install tools + clone wabase, wazapin, dll satu
 gh auth login
 
 # 2) bootstrap kit + tools + all projects
-export DEVKIT_KIT_REPO=git@github.com:ujang19/devkit.git
-curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/bootstrap-vps.sh | bash
+export DEVKIT_KIT_REPO=git@github.com:bedulweb/devkit.git
+curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/bootstrap-vps.sh | bash
 ```
 
 Atau manual:
 
 ```bash
-git clone git@github.com:ujang19/devkit.git ~/linux-devkit
+git clone git@github.com:bedulweb/devkit.git ~/linux-devkit
 bash ~/linux-devkit/install.sh --profile default --with-docker -y
 source ~/.bashrc
 devkit restore

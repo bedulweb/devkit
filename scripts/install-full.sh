@@ -10,11 +10,11 @@
 #      bash ~/linux-devkit/scripts/install-full.sh
 #
 # Atau sekali di VM baru (setelah env file ada):
-#      curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/scripts/install-full.sh | bash
+#      curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/scripts/install-full.sh | bash
 # =============================================================================
 set -euo pipefail
 
-KIT_REPO="${DEVKIT_KIT_REPO:-https://github.com/ujang19/devkit.git}"
+KIT_REPO="${DEVKIT_KIT_REPO:-https://github.com/bedulweb/devkit.git}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || SCRIPT_DIR=""
 
 # ── pastikan kit ada ────────────────────────────────────────────────────────

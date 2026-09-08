@@ -3,7 +3,7 @@
 # devkit run.sh — full setup until workspace is usable
 #
 # Fresh Ubuntu VM:
-#   curl -fsSL https://raw.githubusercontent.com/ujang19/devkit/main/run.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/bedulweb/devkit/main/run.sh | bash
 #
 # Or local:
 #   bash ~/linux-devkit/run.sh
@@ -20,7 +20,7 @@
 #   DEVKIT_WITH_HERDR                 0|1  (default: 1 for default/full profile)
 #   DEVKIT_SKIP_SKILLS                0|1  (default: 0)
 #   DEVKIT_SKIP_INSTALL_DEPS          0|1  (default: 0)  # bun install per app
-#   DEVKIT_KIT_REPO                   default: https://github.com/ujang19/devkit.git
+#   DEVKIT_KIT_REPO                   default: https://github.com/bedulweb/devkit.git
 # =============================================================================
 set -euo pipefail
 
@@ -49,7 +49,7 @@ for f in "${DEVKIT_ENV_FILE:-}" "$HOME/.devkit.env" "$HOME/linux-devkit/.devkit.
   break
 done
 
-KIT_REPO="${DEVKIT_KIT_REPO:-https://github.com/ujang19/devkit.git}"
+KIT_REPO="${DEVKIT_KIT_REPO:-https://github.com/bedulweb/devkit.git}"
 PROFILE="${DEVKIT_PROFILE:-default}"
 WITH_DOCKER="${DEVKIT_WITH_DOCKER:-0}"
 # herdr on by default for default/full (user agent TUI stack)
@@ -61,6 +61,8 @@ DOPPLER_API_HOST="${DOPPLER_API_HOST:-https://api.doppler.com}"
 
 export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${HOME}/go/bin:${PATH}"
 export GOPATH="${GOPATH:-$HOME/go}"
+# non-interactive-safe PATH additions (written by install.sh)
+[[ -f "$HOME/.linux-devkit/env" ]] && source "$HOME/.linux-devkit/env" 2>/dev/null || true
 
 # ── helpers ─────────────────────────────────────────────────────────────────
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -88,7 +90,7 @@ step_kit() {
     git clone --depth 1 "$KIT_REPO" "$HOME/linux-devkit"
     ok "cloned $KIT_REPO → ~/linux-devkit"
   fi
-  # keep name stable: linux-devkit (even if repo is ujang19/devkit)
+  # keep name stable: linux-devkit (even if repo is bedulweb/devkit)
   ln -sfn "$HOME/linux-devkit" "$HOME/devkit" 2>/dev/null || true
 }
 
@@ -141,8 +143,8 @@ step_github() {
     if have gh; then
       echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null \
         || warn "gh auth login --with-token failed (token may still work for API)"
-      # ensure git uses gh helper
-      gh auth setup-git 2>/dev/null || true
+      # keep git on the Doppler helper (gh setup-git would overwrite it)
+      [[ -x "$helper_installer" ]] && "$helper_installer" >/dev/null || true
     fi
     ok "using GH_TOKEN / GITHUB_TOKEN from environment"
     if have gh; then
@@ -155,7 +157,8 @@ step_github() {
 
   if have gh && gh auth status >/dev/null 2>&1; then
     ok "gh already logged in"
-    gh auth setup-git 2>/dev/null || true
+    # keep git on the Doppler helper (gh setup-git would overwrite it)
+    [[ -x "$helper_installer" ]] && "$helper_installer" >/dev/null || true
     return 0
   fi
 
