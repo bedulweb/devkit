@@ -559,6 +559,15 @@ EOF
   ok "~/projects ready"
 }
 
+install_codex() {
+  if [[ -x "$HOME/linux-devkit/scripts/install-codex.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/install-codex.sh"
+    ok "Codex + PinkGreen custom models + MCP"
+  else
+    warn "install-codex.sh missing"
+  fi
+}
+
 install_devkit_cli() {
   log "install devkit helper CLI"
   if [[ -f "$HOME/linux-devkit/scripts/devkit" ]]; then
@@ -650,6 +659,7 @@ export GOPATH
 export PATH
 unset -f _devkit_path_add 2>/dev/null || true
 unset _devkit_node_latest 2>/dev/null || true
+[ -f "$HOME/.devkit.env" ] && set -a && . "$HOME/.devkit.env" && set +a
 EOF
   ok "non-interactive env → $DEVKIT_HOME/env (BASH_ENV)"
 }
@@ -707,6 +717,7 @@ main() {
   install_fzf
   install_uv
   install_nvm_node
+  install_codex
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun
