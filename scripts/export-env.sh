@@ -55,6 +55,26 @@ export DOPPLER_API_HOST="${DOPPLER_API_HOST:-https://api.doppler.com}"
 export DOPPLER_DASHBOARD_HOST="${DOPPLER_DASHBOARD_HOST:-https://dashboard.doppler.com}"
 export DOPPLER_CONFIG="${DOPPLER_CONFIG:-dev}"
 
+# Load Codex and MCP secrets from Doppler when configured. Values stay in the
+# current shell and are never written to the repository.
+if [[ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" == "1" ]] && command -v doppler >/dev/null 2>&1; then
+  _codex_doppler_project="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
+  _codex_doppler_config="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
+  _doppler_secret() {
+    local name="$1" value
+    [[ -n "${!name:-}" ]] && return 0
+    value="$(doppler secrets get "$name" --project="${_codex_doppler_project}" --config="${_codex_doppler_config}" --plain 2>/dev/null || true)"
+    [[ -n "$value" ]] && export "$name=$value"
+  }
+  _doppler_secret PINKGREEN_API_KEY
+  _doppler_secret EXA_API_KEY
+  _doppler_secret FIRECRAWL_API_KEY
+  _doppler_secret FIGMA_API_KEY
+  [[ -n "${PINKGREEN_API_KEY:-}" && -z "${OPENAI_API_KEY:-}" ]] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
+  unset _codex_doppler_project _codex_doppler_config
+  unset -f _doppler_secret
+fi
+
 _status() {
   # print SET/NOT SET without leaking values
   local v="${1:-}"

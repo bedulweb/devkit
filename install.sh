@@ -660,6 +660,23 @@ export PATH
 unset -f _devkit_path_add 2>/dev/null || true
 unset _devkit_node_latest 2>/dev/null || true
 [ -f "$HOME/.devkit.env" ] && set -a && . "$HOME/.devkit.env" && set +a
+if [ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" = "1" ] && command -v doppler >/dev/null 2>&1; then
+  _devkit_doppler_project="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
+  _devkit_doppler_config="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
+  _devkit_secret() {
+    _devkit_name="$1"
+    [ -n "${!_devkit_name:-}" ] && return 0
+    _devkit_value="$(doppler secrets get "$_devkit_name" --project="$_devkit_doppler_project" --config="$_devkit_doppler_config" --plain 2>/dev/null || true)"
+    [ -n "$_devkit_value" ] && export "$_devkit_name=$_devkit_value"
+  }
+  _devkit_secret PINKGREEN_API_KEY
+  _devkit_secret EXA_API_KEY
+  _devkit_secret FIRECRAWL_API_KEY
+  _devkit_secret FIGMA_API_KEY
+  [ -n "${PINKGREEN_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
+  unset _devkit_doppler_project _devkit_doppler_config _devkit_name _devkit_value
+  unset -f _devkit_secret 2>/dev/null || true
+fi
 EOF
   ok "non-interactive env → $DEVKIT_HOME/env (BASH_ENV)"
 }
@@ -717,7 +734,6 @@ main() {
   install_fzf
   install_uv
   install_nvm_node
-  install_codex
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun
@@ -726,6 +742,7 @@ main() {
     install_direnv
     install_starship
     [[ "$WITH_DOPPLER" == "1" ]] && install_doppler
+    install_codex
     install_go
     install_opencode
     install_pm2

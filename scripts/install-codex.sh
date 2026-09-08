@@ -4,6 +4,27 @@ CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 CODEX_CONFIG="$CODEX_HOME/config.toml"
 CODEX_CATALOG="$CODEX_HOME/cx-models.json"
 PINKGREEN_URL="${PINKGREEN_BASE_URL:-https://ai.pinkgreen.me/v1}"
+DOPPLER_PROJECT="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
+DOPPLER_CONFIG="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
+
+load_secret() {
+  local name="$1"
+  if [[ -n "${!name:-}" ]]; then
+    return 0
+  fi
+  if command -v doppler >/dev/null 2>&1 && doppler secrets get "$name" \
+      --project="$DOPPLER_PROJECT" --config="$DOPPLER_CONFIG" --plain >/tmp/codex-secret 2>/dev/null; then
+    export "$name=$(tr -d '\r\n' </tmp/codex-secret)"
+  fi
+}
+
+load_secret PINKGREEN_API_KEY
+load_secret EXA_API_KEY
+load_secret FIRECRAWL_API_KEY
+load_secret FIGMA_API_KEY
+if [[ -z "${OPENAI_API_KEY:-}" && -n "${PINKGREEN_API_KEY:-}" ]]; then
+  export OPENAI_API_KEY="$PINKGREEN_API_KEY"
+fi
 log() { printf '==> codex: %s\n' "$*"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 mkdir -p "$CODEX_HOME"
@@ -12,7 +33,7 @@ if ! have jq; then echo "jq is required to build the Codex model catalog" >&2; e
 log "installing @openai/codex"
 npm install --global @openai/codex
 log "building cx model catalog"
-codex debug models > /tmp/codex-models.json
+codex debug models --bundled > /tmp/codex-models.json
 jq '{models: [.models[] | select(.slug == "gpt-5.6-sol" or .slug == "gpt-5.6-terra" or .slug == "gpt-5.6-luna" or .slug == "gpt-6-astra") | .slug = (if .slug == "gpt-6-astra" then "cx/gpt-6-astra" else (.slug | sub("^gpt-"; "cx/gpt-")) end)]}' /tmp/codex-models.json > "$CODEX_CATALOG"
 chmod 600 "$CODEX_CATALOG"
 touch "$CODEX_CONFIG"
