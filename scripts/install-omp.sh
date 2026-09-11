@@ -9,7 +9,7 @@ OMP_AGENT="$OMP_HOME/agent"
 DOPPLER_PROJECT="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
 DOPPLER_CONFIG="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
 LOCAL_BIN="${HOME}/.local/bin"
-PINKGREEN_URL="${PINKGREEN_BASE_URL:-https://ai.pinkgreen.me/v1}"
+PINKGREEN_URL="${PINKGREEN_BASE_URL:-https://ai.sabergaming.my.id/v1}"
 ROUTEID_URL="${ROUTEID_BASE_URL:-https://routeid.trainerhub.workers.dev/v1}"
 
 log()  { printf '\033[1;36m==> omp:\033[0m %s\n' "$*"; }

@@ -3,7 +3,7 @@ set -euo pipefail
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 CODEX_CONFIG="$CODEX_HOME/config.toml"
 CODEX_CATALOG="$CODEX_HOME/cx-models.json"
-PINKGREEN_URL="${PINKGREEN_BASE_URL:-https://ai.pinkgreen.me/v1}"
+PINKGREEN_URL="${PINKGREEN_BASE_URL:-https://ai.sabergaming.my.id/v1}"
 DOPPLER_PROJECT="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
 DOPPLER_CONFIG="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
 
