@@ -568,6 +568,15 @@ install_codex() {
   fi
 }
 
+install_omp() {
+  if [[ -x "$HOME/linux-devkit/scripts/install-omp.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/install-omp.sh"
+    ok "OMP + RouteID/PinkGreen models + MCP"
+  else
+    warn "install-omp.sh missing"
+  fi
+}
+
 install_devkit_cli() {
   log "install devkit helper CLI"
   if [[ -f "$HOME/linux-devkit/scripts/devkit" ]]; then
@@ -741,8 +750,8 @@ main() {
     install_typescript
     install_direnv
     install_starship
-    [[ "$WITH_DOPPLER" == "1" ]] && install_doppler
     install_codex
+    install_omp
     install_go
     install_opencode
     install_pm2
