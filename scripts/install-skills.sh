@@ -40,6 +40,8 @@ SOURCES=(
   "https://github.com/vercel-labs/agent-browser|agent-browser|agent-browser|471ab3852b47b98847f1d9c855c272bb62d0d50b"
   "https://github.com/jakubkrehel/skills|STAR|jakubkrehel-pack|267330e1adfc66a718fb65fa6918c1f06d0a689e"
   "https://github.com/jakubkrehel/make-interfaces-feel-better|make-interfaces-feel-better|feel-better|35545ea1512ad59fa463e6b1f95ca9c052981fe6"
+  "herdrdev/herdr|herdr|herdr|18061191fdc019498610aee81f0df93f6c2ebd31"
+  "depot/skills|STAR|depot-pack|bebbbe445fc30fe0696cb94a24090bf385ec2457"
 )
 
 add_one() {

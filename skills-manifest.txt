@@ -29,6 +29,12 @@ https://github.com/vercel-labs/agent-browser#471ab3852b47b98847f1d9c855c272bb62d
 https://github.com/jakubkrehel/skills#267330e1adfc66a718fb65fa6918c1f06d0a689e --skill *
 https://github.com/jakubkrehel/make-interfaces-feel-better#35545ea1512ad59fa463e6b1f95ca9c052981fe6 --skill make-interfaces-feel-better
 
+# --- Agent runtime (herdr) ---
+herdrdev/herdr#18061191fdc019498610aee81f0df93f6c2ebd31 --skill herdr
+
+# --- Depot (CI/build/runner skills) ---
+depot/skills#bebbbe445fc30fe0696cb94a24090bf385ec2457 --skill *
+
 # --- aiforui.dev (token-gated, NOT via skills CLI) ---
 # Installed automatically by scripts/install-skills.sh when
 # AIFORUI_INSTALL_TOKEN exists in Doppler (developer-workstation/dev).
