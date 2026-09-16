@@ -1,0 +1,124 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // GENERATED from devkit repo — do not store secrets here.
+  // All keys resolve at runtime via {env:VAR}.
+  // Install: bash ~/linux-devkit/scripts/install-opencode.sh
+  // Secrets live in Doppler (default: developer-workstation/dev):
+  //   PINKGREEN_API_KEY, ROUTEID_API_KEY, EXA_API_KEY, FIRECRAWL_API_KEY
+  "providers": {
+    "cx": {
+      "name": "SaberGaming CX",
+      "env": ["PINKGREEN_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://ai.sabergaming.my.id/v1",
+        "apiKey": "{env:PINKGREEN_API_KEY}"
+      },
+      "models": {
+        "gpt-5.6-sol": {
+          "modelID": "cx/gpt-5.6-sol",
+          "name": "CX GPT-5.6 Sol",
+          "limit": { "context": 372000, "output": 128000 }
+        },
+        "gpt-5.6-terra": {
+          "modelID": "cx/gpt-5.6-terra",
+          "name": "CX GPT-5.6 Terra",
+          "limit": { "context": 272000, "output": 128000 }
+        },
+        "gpt-5.6-luna": {
+          "modelID": "cx/gpt-5.6-luna",
+          "name": "CX GPT-5.6 Luna",
+          "limit": { "context": 272000, "output": 128000 }
+        },
+        "gpt-6-astra": {
+          "modelID": "cx/gpt-6-astra",
+          "name": "CX GPT-6 Astra",
+          "limit": { "context": 272000, "output": 128000 }
+        }
+      }
+    },
+    "hv": {
+      "name": "SaberGaming HV",
+      "env": ["PINKGREEN_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://ai.sabergaming.my.id/v1",
+        "apiKey": "{env:PINKGREEN_API_KEY}"
+      },
+      "models": {
+        "deepseek-v4.1-flash": {
+          "modelID": "hv/deepseek-ai/deepseek-v4.1-flash",
+          "name": "HV DeepSeek V4.1 Flash",
+          "limit": { "context": 1000000, "output": 384000 }
+        }
+      }
+    },
+    "routeid": {
+      "name": "RouteID",
+      "env": ["ROUTEID_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://routeid.trainerhub.workers.dev/v1",
+        "apiKey": "{env:ROUTEID_API_KEY}"
+      },
+      "models": {
+        "kimi-k3": {
+          "name": "RouteID Kimi K3",
+          "limit": { "context": 1048576, "output": 1048576 }
+        },
+        "glm-5.2": {
+          "name": "RouteID GLM-5.2",
+          "limit": { "context": 1048576, "output": 131072 }
+        },
+        "deepseek-v4-pro-0813": {
+          "name": "RouteID DeepSeek V4 Pro 0813",
+          "limit": { "context": 1048576, "output": 393216 }
+        },
+        "deepseek-v4-flash-0731": {
+          "name": "RouteID DeepSeek V4 Flash 0731",
+          "limit": { "context": 1048576, "output": 393216 }
+        },
+        "qwen3.8-max": {
+          "name": "RouteID Qwen3.8 Max",
+          "limit": { "context": 1048576, "output": 131072 }
+        },
+        "qwen3.8-flash": {
+          "name": "RouteID Qwen3.8 Flash",
+          "limit": { "context": 1048576, "output": 131072 }
+        }
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      "mobbin": {
+        "type": "remote",
+        "url": "https://api.mobbin.com/mcp"
+      },
+      "firecrawl": {
+        "type": "local",
+        "command": ["bunx", "-y", "firecrawl-mcp"],
+        "environment": {
+          "FIRECRAWL_API_KEY": "{env:FIRECRAWL_API_KEY}"
+        }
+      },
+      "exa": {
+        "type": "remote",
+        "url": "https://mcp.exa.ai/mcp",
+        "oauth": false,
+        "headers": {
+          "x-api-key": "{env:EXA_API_KEY}"
+        }
+      },
+      "linear": {
+        "type": "remote",
+        "url": "https://mcp.linear.app/mcp"
+      },
+      "agentation": {
+        "type": "local",
+        "command": ["npx", "-y", "agentation-mcp", "server"],
+        "environment": {}
+      }
+    }
+  }
+}

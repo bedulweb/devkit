@@ -30,6 +30,7 @@ load_secret() {
 
 log "loading secrets from Doppler"
 load_secret PINKGREEN_API_KEY
+load_secret ROUTEID_API_KEY
 load_secret EXA_API_KEY
 load_secret FIRECRAWL_API_KEY
 load_secret E2B_API_KEY
@@ -62,8 +63,10 @@ install_omp_binary() {
 write_models() {
   log "writing models.yml"
   mkdir -p "$OMP_AGENT"
-  local pinkgreen_key="${PINKGREEN_API_KEY:-sk-f170562316110c76-jneosk-ae223cf0}"
-  local routeid_key="${ROUTEID_API_KEY:-Mastah123}"
+  local pinkgreen_key="${PINKGREEN_API_KEY:-}"
+  local routeid_key="${ROUTEID_API_KEY:-}"
+  [[ -z "$pinkgreen_key" ]] && warn "PINKGREEN_API_KEY not found — pinkgreen provider will need Doppler/env at runtime"
+  [[ -z "$routeid_key" ]] && warn "ROUTEID_API_KEY not found — routeid provider will need Doppler/env at runtime"
   cat > "$OMP_AGENT/models.yml" <<EOF
 providers:
   routeid:
@@ -160,7 +163,7 @@ EOF
 write_mcp() {
   log "writing mcp.json"
   local exa_key="${EXA_API_KEY:-}"
-  local firecrawl_key="${FIRECRAWL_API_KEY:-fc-29c6017f144f45199a891f80f7df1aa8}"
+  local firecrawl_key="${FIRECRAWL_API_KEY:-}"
   local e2b_key="${E2B_API_KEY:-}"
   local gh_token="${GITHUB_TOKEN:-}"
   local bunx_path="${HOME}/.bun/bin/bunx"

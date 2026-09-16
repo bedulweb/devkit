@@ -67,9 +67,13 @@ if [[ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" == "1" ]] && command -v doppler >/dev/null
     [[ -n "$value" ]] && export "$name=$value"
   }
   _doppler_secret PINKGREEN_API_KEY
+  _doppler_secret ROUTEID_API_KEY
   _doppler_secret EXA_API_KEY
   _doppler_secret FIRECRAWL_API_KEY
   _doppler_secret FIGMA_API_KEY
+  _doppler_secret SABER_API_KEY
+  [[ -n "${PINKGREEN_API_KEY:-}" && -z "${SABER_API_KEY:-}" ]] && export SABER_API_KEY="$PINKGREEN_API_KEY"
+  [[ -z "${PINKGREEN_API_KEY:-}" && -n "${SABER_API_KEY:-}" ]] && export PINKGREEN_API_KEY="$SABER_API_KEY"
   [[ -n "${PINKGREEN_API_KEY:-}" && -z "${OPENAI_API_KEY:-}" ]] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
   unset _codex_doppler_project _codex_doppler_config
   unset -f _doppler_secret

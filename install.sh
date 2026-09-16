@@ -495,14 +495,11 @@ install_go() {
 }
 
 install_opencode() {
-  if have opencode; then ok "opencode $(opencode --version 2>/dev/null | head -1)"; return; fi
-  log "install OpenCode"
-  if curl -fsSL https://opencode.ai/install | bash; then
-    export PATH="$HOME/.opencode/bin:$PATH"
-    ln -sf "$HOME/.opencode/bin/opencode" "$LOCAL_BIN/opencode" 2>/dev/null || true
-    ok "opencode $(opencode --version 2>/dev/null | head -1 || echo installed)"
+  if [[ -x "$HOME/linux-devkit/scripts/install-opencode.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/install-opencode.sh"
+    ok "OpenCode + cx/routeid custom models + MCP (Doppler-backed)"
   else
-    warn "opencode install failed"
+    warn "install-opencode.sh missing"
   fi
 }
 
@@ -679,9 +676,14 @@ if [ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" = "1" ] && command -v doppler >/dev/null 2>
     [ -n "$_devkit_value" ] && export "$_devkit_name=$_devkit_value"
   }
   _devkit_secret PINKGREEN_API_KEY
+  _devkit_secret ROUTEID_API_KEY
   _devkit_secret EXA_API_KEY
   _devkit_secret FIRECRAWL_API_KEY
   _devkit_secret FIGMA_API_KEY
+  # legacy alias: SABER_API_KEY == PINKGREEN_API_KEY (same endpoint, old name)
+  _devkit_secret SABER_API_KEY
+  [ -n "${PINKGREEN_API_KEY:-}" ] && [ -z "${SABER_API_KEY:-}" ] && export SABER_API_KEY="$PINKGREEN_API_KEY"
+  [ -z "${PINKGREEN_API_KEY:-}" ] && [ -n "${SABER_API_KEY:-}" ] && export PINKGREEN_API_KEY="$SABER_API_KEY"
   [ -n "${PINKGREEN_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
   unset _devkit_doppler_project _devkit_doppler_config _devkit_name _devkit_value
   unset -f _devkit_secret 2>/dev/null || true
