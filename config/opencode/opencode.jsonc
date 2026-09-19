@@ -18,22 +18,34 @@
         "gpt-5.6-sol": {
           "modelID": "cx/gpt-5.6-sol",
           "name": "CX GPT-5.6 Sol",
-          "limit": { "context": 372000, "output": 128000 }
+          "limit": { "context": 372000, "output": 128000 },
+          "variants": [
+            { "id": "xhigh", "settings": { "reasoningEffort": "xhigh" } }
+          ]
         },
         "gpt-5.6-terra": {
           "modelID": "cx/gpt-5.6-terra",
           "name": "CX GPT-5.6 Terra",
-          "limit": { "context": 272000, "output": 128000 }
+          "limit": { "context": 272000, "output": 128000 },
+          "variants": [
+            { "id": "xhigh", "settings": { "reasoningEffort": "xhigh" } }
+          ]
         },
         "gpt-5.6-luna": {
           "modelID": "cx/gpt-5.6-luna",
           "name": "CX GPT-5.6 Luna",
-          "limit": { "context": 272000, "output": 128000 }
+          "limit": { "context": 272000, "output": 128000 },
+          "variants": [
+            { "id": "xhigh", "settings": { "reasoningEffort": "xhigh" } }
+          ]
         },
         "gpt-6-astra": {
           "modelID": "cx/gpt-6-astra",
           "name": "CX GPT-6 Astra",
-          "limit": { "context": 272000, "output": 128000 }
+          "limit": { "context": 272000, "output": 128000 },
+          "variants": [
+            { "id": "xhigh", "settings": { "reasoningEffort": "xhigh" } }
+          ]
         }
       }
     },
@@ -116,8 +128,8 @@
       },
       "agentation": {
         "type": "local",
-        "command": ["npx", "-y", "agentation-mcp", "server"],
-        "environment": {}
+        "command": ["npx", "-y", "agentation-mcp", "server", "--mcp-only", "--http-url", "https://agentation.wzpn.net"],
+        "enabled": true
       }
     }
   }

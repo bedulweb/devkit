@@ -92,9 +92,39 @@ assert 'cx' in cfg['providers'], 'provider cx missing'
 assert 'routeid' in cfg['providers'], 'provider routeid missing'
 assert 'exa' in cfg['mcp']['servers'], 'mcp exa missing'
 assert 'firecrawl' in cfg['mcp']['servers'], 'mcp firecrawl missing'
+assert 'agentation' in cfg['mcp']['servers'], 'mcp agentation missing'
 print('config JSON valid: providers=%s mcp=%s' % (
   sorted(cfg['providers']), sorted(cfg['mcp']['servers'])))
 PY
 
 log "ready: run 'opencode' (keys resolve from env/Doppler at runtime)"
 log "hint: source ~/linux-devkit/scripts/export-env.sh  # or: doppler run --project $DOPPLER_PROJECT --config $DOPPLER_CONFIG -- opencode"
+
+# ── Seed managed background service with keys ─────────────────────────
+# `opencode serve --service` is auto-spawned by the first CLI/TUI call and
+# inherits env from THAT parent. If it was spawned from a shell without
+# Doppler env, {env:} placeholders resolve empty and every inference fails
+# with HTTP 401 — while curl from a key-loaded shell still returns 200.
+# Bounce it here under `doppler run` so the running service holds the keys.
+# No secret value is printed, logged, or written to disk in this step.
+if have opencode && have doppler && [[ "$missing" == "0" ]]; then
+  if doppler run --project="$DOPPLER_PROJECT" --config="$DOPPLER_CONFIG" -- \
+      opencode service restart >/dev/null 2>&1; then
+    ok "background service restarted with Doppler env"
+    if doppler run --project="$DOPPLER_PROJECT" --config="$DOPPLER_CONFIG" -- \
+        opencode api get /api/provider/cx 2>/dev/null | python3 -c '
+import json, sys
+key = json.load(sys.stdin)["data"]["settings"].get("apiKey", "")
+assert key and "{env:" not in key, "key did not resolve"
+print("provider cx key resolves in running service (%d chars)" % len(key))
+'; then
+      ok "provider keys resolve in running service"
+    else
+      warn "service restarted but cx key does not resolve — retry: doppler run --project $DOPPLER_PROJECT --config $DOPPLER_CONFIG -- opencode service restart"
+    fi
+  else
+    warn "could not restart background service — run manually: doppler run --project $DOPPLER_PROJECT --config $DOPPLER_CONFIG -- opencode service restart"
+  fi
+else
+  warn "skipping service restart (doppler/opencode missing or secrets incomplete)"
+fi
