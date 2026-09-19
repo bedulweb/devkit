@@ -55,6 +55,21 @@ opencode                                      # keys resolve via {env:}
 doppler run --project developer-workstation --config dev -- opencode
 ```
 
+## Serve (`opencode serve`)
+
+`opencode serve` inherits its environment from the parent process. Starting it
+bare (systemd unit, login shell without Doppler env, …) serves the custom
+models with empty keys and every inference fails with HTTP 401. Always start
+it wrapped:
+
+```bash
+bash ~/linux-devkit/scripts/serve-opencode.sh --port 4096
+# preflight only — exits non-zero naming the missing keys (values never printed):
+bash ~/linux-devkit/scripts/serve-opencode.sh --check
+```
+
+Stop it with `bash ~/linux-devkit/scripts/stop-dev.sh opencode`.
+
 ## Conventions
 
 - Never commit raw keys — config uses `{env:VAR}` placeholders only.
