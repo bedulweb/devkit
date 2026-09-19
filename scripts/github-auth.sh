@@ -9,7 +9,7 @@ command -v gh >/dev/null 2>&1 || { echo 'GitHub CLI is required.' >&2; exit 1; }
 
 if [[ "${1:-}" == "--check" ]]; then
   exec doppler run --project="$PROJECT" --config="$CONFIG" -- \
-    bash -c 'test -n "${GH_TOKEN:-}" && gh api user --jq .login'
+    bash -c 'test -n "${GH_TOKEN:-${GITHUB_TOKEN:-}}" && gh api user --jq .login'
 fi
 
 ASKPASS="$(cd "$(dirname "$0")" && pwd)/git-askpass.sh"
