@@ -39,6 +39,7 @@ load_secret PINKGREEN_API_KEY
 load_secret ROUTEID_API_KEY
 load_secret EXA_API_KEY
 load_secret FIRECRAWL_API_KEY
+load_secret SENTRY_ACCESS_TOKEN
 # legacy alias: older configs used SABER_API_KEY for the same PinkGreen endpoint
 if [[ -z "${PINKGREEN_API_KEY:-}" && -n "${SABER_API_KEY:-}" ]]; then
   export PINKGREEN_API_KEY="$SABER_API_KEY"

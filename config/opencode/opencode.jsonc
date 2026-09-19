@@ -130,6 +130,10 @@
         "type": "local",
         "command": ["npx", "-y", "agentation-mcp", "server", "--mcp-only", "--http-url", "https://agentation.wzpn.net"],
         "enabled": true
+      },
+      "sentry": {
+        "type": "remote",
+        "url": "https://mcp.sentry.dev/mcp"
       }
     }
   }
