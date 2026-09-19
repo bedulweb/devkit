@@ -237,6 +237,21 @@ step_skills() {
     cp -f "$HOME/linux-devkit/.agents/skills/devkit/SKILL.md" "$HOME/.claude/skills/devkit/SKILL.md"
     ok "devkit skill installed globally"
   fi
+  # ensure our agentation skill is present globally (same 3 dirs)
+  if [[ -f "$HOME/linux-devkit/.agents/skills/agentation/SKILL.md" ]]; then
+    mkdir -p "$HOME/.agents/skills/agentation" "$HOME/.config/opencode/skills/agentation" "$HOME/.claude/skills/agentation"
+    cp -f "$HOME/linux-devkit/.agents/skills/agentation/SKILL.md" "$HOME/.agents/skills/agentation/SKILL.md"
+    cp -f "$HOME/linux-devkit/.agents/skills/agentation/SKILL.md" "$HOME/.config/opencode/skills/agentation/SKILL.md"
+    cp -f "$HOME/linux-devkit/.agents/skills/agentation/SKILL.md" "$HOME/.claude/skills/agentation/SKILL.md"
+    ok "agentation skill installed globally"
+  fi
+  # ensure agent-browser skill reaches opencode skills dir too
+  # (skills CLI keeps it under ~/.agents/skills only)
+  if [[ -f "$HOME/.agents/skills/agent-browser/SKILL.md" ]]; then
+    mkdir -p "$HOME/.config/opencode/skills/agent-browser"
+    cp -f "$HOME/.agents/skills/agent-browser/SKILL.md" "$HOME/.config/opencode/skills/agent-browser/SKILL.md"
+    ok "agent-browser skill ensured in opencode skills"
+  fi
   if have grok && [[ -x "$HOME/linux-devkit/scripts/restore-grok.sh" ]]; then
     "$HOME/linux-devkit/scripts/restore-grok.sh" || warn "Grok restore had errors"
   fi
