@@ -1,0 +1,14 @@
+# devkit herdr machines — satu baris per mesin:
+#   alias  user  host  port  label...
+#
+# alias  = nama Host di ~/.ssh/config (dipakai sebagai target machine add)
+# label  = nama tampil di sidebar herdr (boleh spasi, diambil dari sisa baris)
+#
+# Contoh menambah mesin baru: tambah satu baris, lalu
+#   bash ~/linux-devkit/scripts/herdr-machines.sh
+# atau ikut setup penuh: bash ~/linux-devkit/run.sh
+
+lia       lia    100.74.3.7      22  lia
+aimentor  ujang  185.190.58.80   22  ai mentor
+advin     ujang  160.187.211.38  22  advin
+putravm   root   100.88.207.21   22  putravm

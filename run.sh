@@ -18,6 +18,8 @@
 #   DEVKIT_PROFILE                    minimal|default|full  (default: default)
 #   DEVKIT_WITH_DOCKER                0|1  (default: 0)
 #   DEVKIT_WITH_HERDR                 0|1  (default: 1 for default/full profile)
+#   DEVKIT_WITH_HERDR_MACHINES        0|1  (default: 1 — daftarkan saved SSH machines
+#                                     dari config/herdr-machines, key via Doppler)
 #   DEVKIT_SKIP_SKILLS                0|1  (default: 0)
 #   DEVKIT_SKIP_INSTALL_DEPS          0|1  (default: 0)  # bun install per app
 #   DEVKIT_KIT_REPO                   default: https://github.com/bedulweb/devkit.git
@@ -203,6 +205,21 @@ step_doppler() {
   fi
 }
 
+# ── step: herdr saved machines ──────────────────────────────────────────────
+step_herdr_machines() {
+  log "herdr saved machines (config/herdr-machines)"
+  if [[ "${DEVKIT_WITH_HERDR_MACHINES:-1}" != "1" ]]; then
+    log "skip (DEVKIT_WITH_HERDR_MACHINES=0)"
+    return 0
+  fi
+  if [[ "$WITH_HERDR" != "1" ]]; then
+    log "skip (herdr off)"
+    return 0
+  fi
+  # non-fatal: remote jadul butuh approval interaktif — script warn sendiri
+  bash "$DEVKIT_DIR/scripts/herdr-machines.sh" || warn "herdr machines incomplete (jalankan manual: bash ~/linux-devkit/scripts/herdr-machines.sh)"
+}
+
 # ── step 5: restore projects ────────────────────────────────────────────────
 step_restore() {
   log "5/7  restore projects from projects.yaml"
@@ -365,6 +382,7 @@ main() {
   step_install
   step_doppler
   step_github
+  step_herdr_machines
   step_restore
   step_skills
   step_deps
