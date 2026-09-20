@@ -413,6 +413,16 @@ install_doppler() {
   ok "doppler $($LOCAL_BIN/doppler --version | head -1)"
 }
 
+install_depot() {
+  log "install Depot CLI"
+  if [[ -x "$HOME/linux-devkit/scripts/install-depot.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/install-depot.sh"
+    ok "Depot CLI → $LOCAL_BIN/depot"
+  else
+    warn "install-depot.sh missing"
+  fi
+}
+
 install_docker() {
   [[ "$WITH_DOCKER" == "1" ]] || return 0
   if have docker; then ok "docker $(docker --version)"; return; fi
@@ -593,7 +603,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler direnv starship; do
+    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler depot direnv starship; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -737,6 +747,12 @@ main() {
 
   install_apt_base
 
+  # Doppler must be available before Depot so the Depot wrapper can resolve
+  # DEPOT_TOKEN without persisting it in shell configuration.
+  if [[ "$WITH_DOPPLER" == "1" ]]; then
+    install_doppler
+  fi
+
   # always (all profiles)
   install_gh
   install_jq
@@ -745,6 +761,7 @@ main() {
   install_fzf
   install_uv
   install_nvm_node
+  install_depot
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun
