@@ -40,7 +40,8 @@ load_secret CX_API_KEY
 load_secret ROUTEID_API_KEY
 load_secret EXA_API_KEY
 load_secret FIRECRAWL_API_KEY
-load_secret SENTRY_ACCESS_TOKEN
+# NOTE: sentry/mobbin/linear/neon are OAuth-only (creds in opencode.db) —
+# no manual Authorization header, no Doppler secret required.
 # legacy alias: older configs used SABER_API_KEY for the same PinkGreen endpoint
 if [[ -z "${PINKGREEN_API_KEY:-}" && -n "${SABER_API_KEY:-}" ]]; then
   export PINKGREEN_API_KEY="$SABER_API_KEY"
@@ -53,7 +54,7 @@ if [[ -z "${OPENAI_API_KEY:-}" && -n "${PINKGREEN_API_KEY:-}" ]]; then
 fi
 
 missing=0
-for k in PINKGREEN_API_KEY ROUTEID_API_KEY EXA_API_KEY FIRECRAWL_API_KEY SENTRY_ACCESS_TOKEN; do
+for k in PINKGREEN_API_KEY ROUTEID_API_KEY EXA_API_KEY FIRECRAWL_API_KEY; do
   if [[ -z "${!k:-}" ]]; then
     warn "$k not found in env or Doppler — related provider/MCP will fail at runtime"
     missing=1
