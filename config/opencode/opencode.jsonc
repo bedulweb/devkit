@@ -5,6 +5,13 @@
   // Install: bash ~/linux-devkit/scripts/install-opencode.sh
   // Secrets live in Doppler (default: developer-workstation/dev):
   //   PINKGREEN_API_KEY, ROUTEID_API_KEY, EXA_API_KEY, FIRECRAWL_API_KEY
+  // V2 server plugins. This list is the source of truth — install-opencode.sh
+  // renders __HINDSIGHT_PLUGIN_DIR__ to $HOME/.hindsight/coding-agents.
+  // opencode-firecrawl needs no entry here: it auto-loads from
+  // ~/.config/opencode/plugins/ (synced by scripts/install-opencode-plugins.sh).
+  "plugins": [
+    "__HINDSIGHT_PLUGIN_DIR__"
+  ],
   "providers": {
     "cx": {
       "name": "SaberGaming CX",

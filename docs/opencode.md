@@ -70,6 +70,28 @@ bash ~/linux-devkit/scripts/serve-opencode.sh --check
 
 Stop it with `bash ~/linux-devkit/scripts/stop-dev.sh opencode`.
 
+## Plugins (V2)
+
+Installer: `scripts/install-opencode-plugins.sh` (called by
+`install-opencode.sh`).
+
+| Plugin | Source | How it loads |
+|--------|--------|--------------|
+| `opencode-firecrawl` | vendored V2 port at `config/opencode/plugins/opencode-firecrawl`, synced to `~/.config/opencode/plugins/` (auto-discovered) | skill `firecrawl` + install instructions + `FIRECRAWL_API_KEY` injection into every shell |
+| `hindsight-coding-agents` | `~/.hindsight/coding-agents` (its own installer) | explicit V2 `plugins` entry in `opencode.jsonc` (placeholder `__HINDSIGHT_PLUGIN_DIR__`, rendered at install) |
+
+Notes:
+
+- Upstream `firecrawl/opencode-firecrawl` is V1-only, and the compiled
+  opencode binary cannot resolve a runtime `@opencode/plugin` import from
+  plugin dirs — the vendored copy uses `import type` only (enforced by
+  `tests/check-opencode-config.sh`).
+- The firecrawl plugin resolves `FIRECRAWL_API_KEY` from env, falling back
+  to Doppler (`developer-workstation/dev`) — no `firecrawl login` needed.
+- Never hand-edit `~/.config/opencode/opencode.jsonc` (e.g. hindsight's
+  installer adds a legacy V1 `plugin` key there); re-running
+  `install-opencode.sh` regenerates it from the template.
+
 ## Conventions
 
 - Never commit raw keys — config uses `{env:VAR}` placeholders only.

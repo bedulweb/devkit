@@ -74,13 +74,17 @@ fi
 # ── Render config (template has {env:} placeholders only — safe to copy) ──
 [[ -f "$TEMPLATE" ]] || die "template missing: $TEMPLATE"
 mkdir -p "$(dirname "$TARGET")"
-if [[ -f "$TARGET" ]] && ! cmp -s "$TEMPLATE" "$TARGET"; then
+# Render to temp first so the backup check ignores the substituted plugin path.
+RENDERED="$(mktemp)"
+sed "s|__HINDSIGHT_PLUGIN_DIR__|${HOME}/.hindsight/coding-agents|g" "$TEMPLATE" >"$RENDERED"
+if [[ -f "$TARGET" ]] && ! cmp -s "$RENDERED" "$TARGET"; then
   cp -f "$TARGET" "$TARGET.bak.$(date +%Y%m%d%H%M%S)"
   ok "existing config backed up"
 fi
-cp -f "$TEMPLATE" "$TARGET"
+cp -f "$RENDERED" "$TARGET"
+rm -f "$RENDERED"
 chmod 600 "$TARGET"
-ok "config → $TARGET"
+ok "config → $TARGET (hindsight plugin path rendered)"
 
 # ── Verify ──────────────────────────────────────────────────────────
 python3 - "$TARGET" <<'PY'
@@ -100,6 +104,13 @@ PY
 
 log "ready: run 'opencode' (keys resolve from env/Doppler at runtime)"
 log "hint: source ~/linux-devkit/scripts/export-env.sh  # or: doppler run --project $DOPPLER_PROJECT --config $DOPPLER_CONFIG -- opencode"
+
+# ── V2 server plugins (firecrawl vendored port + hindsight) ──────────
+if [[ -x "$KIT/scripts/install-opencode-plugins.sh" ]]; then
+  bash "$KIT/scripts/install-opencode-plugins.sh" || warn "plugin setup had warnings (see above)"
+else
+  warn "install-opencode-plugins.sh missing — plugins not synced"
+fi
 
 # ── Seed managed background service with keys ─────────────────────────
 # `opencode serve --service` is auto-spawned by the first CLI/TUI call and
