@@ -132,13 +132,14 @@ install_systemd_service() {
   local unit="$unit_dir/opencode.service"
   local dropin="$unit_dir/opencode.service.d/override.conf"
   mkdir -p "$unit_dir" "$unit_dir/opencode.service.d"
-  if [[ ! -f "$unit" ]] || grep -q "EnvironmentFile=%h/.config/opencode/.env" "$unit" 2>/dev/null; then
+  if [[ ! -f "$unit" ]] || grep -q "EnvironmentFile=%h/.config/opencode/.env" "$unit" 2>/dev/null \
+    || ! grep -q ".local/share/vite-plus/bin" "$unit" 2>/dev/null; then
     cat >"$unit" <<EOF
 [Unit]
 Description=OpenCode (Doppler-backed)
 After=network-online.target
 [Service]
-Environment="PATH=$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:$HOME/.local/share/vite-plus/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=$KIT/scripts/serve-opencode.sh --service
 Restart=always
 RestartSec=3
