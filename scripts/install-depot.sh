@@ -67,4 +67,6 @@ exit 1
 EOF
 chmod 755 "$LOCAL_BIN/depot"
 
-"$LOCAL_BIN/depot" version
+# Smoke-test the real binary directly: the wrapper above needs DEPOT_TOKEN
+# (via env or Doppler), which may not be configured yet on a fresh VM.
+"$INSTALL_DIR/depot-real" version

@@ -414,6 +414,7 @@ install_doppler() {
 }
 
 install_depot() {
+  if have depot; then ok "depot $(depot --version 2>/dev/null | head -1)"; return; fi
   log "install Depot CLI"
   if [[ -x "$HOME/linux-devkit/scripts/install-depot.sh" ]]; then
     bash "$HOME/linux-devkit/scripts/install-depot.sh"
