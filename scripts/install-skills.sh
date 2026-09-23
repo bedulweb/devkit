@@ -96,6 +96,26 @@ for entry in "${SOURCES[@]}"; do
   add_one "$src" "$skill" "$label" "${ref:-}"
 done
 
+# Neon official skills — installs the default Neon skill set globally for
+# OpenCode and Claude Code. The Neon CLI also keeps these skills updatable via
+# `npx neon@latest skills update --global -y`.
+install_neon_skills() {
+  have npx || { warn "Neon skills skipped (npx missing)"; return 0; }
+  log ""
+  log "==> [neon-skills] installing official Neon skills"
+  if npx --yes neon@latest skills --global \
+      --agent opencode --agent claude-code \
+      --skill neon-postgres \
+      --skill neon-postgres-branches \
+      --skill neon-postgres-egress-optimizer -y >>"$LOG" 2>&1; then
+    ok "neon skills OK"
+  else
+    warn "neon skills install failed — see $LOG"
+  fi
+}
+
+install_neon_skills
+
 # aiforui.dev skills — token-gated. Token lives in Doppler, never in this repo.
 # Override source: DEVKIT_AIFORUI_DOPPLER_PROJECT / DEVKIT_AIFORUI_DOPPLER_CONFIG
 # Skip: DEVKIT_SKIP_AIFORUI=1

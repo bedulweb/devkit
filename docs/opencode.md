@@ -31,7 +31,8 @@ Legacy alias: `SABER_API_KEY` is accepted as fallback for `PINKGREEN_API_KEY`
 
 ## Models
 
-- `cx`: `cx/gpt-5.6-sol`, `cx/gpt-5.6-terra`, `cx/gpt-5.6-luna`, `cx/gpt-6-astra`
+- `cx`: `cx/gpt-5.6-sol`, `cx/gpt-5.6-terra`, `cx/gpt-5.6-luna`, `cx/gpt-6-astra`, `cx/gpt-6`, `cx/gpt-6-luna`, `cx/gpt-6-sol`, `cx/gpt-6-terra`
+- CX model variants: `none`, `low`, `medium`, and `high` reasoning effort.
 - `hv`: `hv/deepseek-ai/deepseek-v4.1-flash`
 - `routeid`: `kimi-k3`, `glm-5.2`, `deepseek-v4-pro-0813`,
   `deepseek-v4-flash-0731`, `qwen3.8-max`, `qwen3.8-flash`
@@ -67,6 +68,13 @@ bash ~/linux-devkit/scripts/serve-opencode.sh --port 4096
 # preflight only — exits non-zero naming the missing keys (values never printed):
 bash ~/linux-devkit/scripts/serve-opencode.sh --check
 ```
+
+`install-opencode.sh` also installs a persistent systemd user unit
+(`~/.config/systemd/user/opencode.service`) whose `ExecStart` points at that
+wrapper, so reboots and systemd restarts keep the Doppler env instead of
+reverting to an empty `.env` and reintroducing the 401. Verify with
+`systemctl --user status opencode` and `opencode api get /api/provider/cx`
+(key length reported, value never printed).
 
 Stop it with `bash ~/linux-devkit/scripts/stop-dev.sh opencode`.
 

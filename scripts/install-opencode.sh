@@ -36,6 +36,7 @@ load_secret() {
 
 log "loading secrets from Doppler ($DOPPLER_PROJECT/$DOPPLER_CONFIG)"
 load_secret PINKGREEN_API_KEY
+load_secret CX_API_KEY
 load_secret ROUTEID_API_KEY
 load_secret EXA_API_KEY
 load_secret FIRECRAWL_API_KEY
@@ -44,12 +45,15 @@ load_secret SENTRY_ACCESS_TOKEN
 if [[ -z "${PINKGREEN_API_KEY:-}" && -n "${SABER_API_KEY:-}" ]]; then
   export PINKGREEN_API_KEY="$SABER_API_KEY"
 fi
+if [[ -z "${PINKGREEN_API_KEY:-}" && -n "${CX_API_KEY:-}" ]]; then
+  export PINKGREEN_API_KEY="$CX_API_KEY"
+fi
 if [[ -z "${OPENAI_API_KEY:-}" && -n "${PINKGREEN_API_KEY:-}" ]]; then
   export OPENAI_API_KEY="$PINKGREEN_API_KEY"
 fi
 
 missing=0
-for k in PINKGREEN_API_KEY ROUTEID_API_KEY EXA_API_KEY FIRECRAWL_API_KEY; do
+for k in PINKGREEN_API_KEY ROUTEID_API_KEY EXA_API_KEY FIRECRAWL_API_KEY SENTRY_ACCESS_TOKEN; do
   if [[ -z "${!k:-}" ]]; then
     warn "$k not found in env or Doppler — related provider/MCP will fail at runtime"
     missing=1
@@ -112,14 +116,74 @@ else
   warn "install-opencode-plugins.sh missing — plugins not synced"
 fi
 
+# ── Persistent systemd service (survives reboot/restart) ──────────────────
+# Root cause of recurring HTTP 401: the background server was once started
+# under `doppler run` (keys in RAM) but systemd later restarted it bare —
+# empty ~/.config/opencode/.env, no Doppler env — so {env:} resolved empty
+# for every client while curl from a key-loaded shell still returned 200.
+# Point the user unit at serve-opencode.sh (Doppler wrapper) so every
+# (re)start carries the vault. No secret value is written to disk here,
+# only the project/config names.
+install_systemd_service() {
+  have systemctl || { warn "systemctl missing — skipping persistent service"; return 0; }
+  systemctl --user show-environment >/dev/null 2>&1 || { warn "no systemd user session — skipping persistent service"; return 0; }
+  local unit_dir="$HOME/.config/systemd/user"
+  local unit="$unit_dir/opencode.service"
+  local dropin="$unit_dir/opencode.service.d/override.conf"
+  mkdir -p "$unit_dir" "$unit_dir/opencode.service.d"
+  if [[ ! -f "$unit" ]] || grep -q "EnvironmentFile=%h/.config/opencode/.env" "$unit" 2>/dev/null; then
+    cat >"$unit" <<EOF
+[Unit]
+Description=OpenCode (Doppler-backed)
+After=network-online.target
+[Service]
+Environment="PATH=$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=$KIT/scripts/serve-opencode.sh --service
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=default.target
+EOF
+    ok "systemd unit → $unit (via serve-opencode.sh)"
+  fi
+  # Drop stale bare overrides (e.g. ExecStart=opencode serve --service without
+  # doppler) that would silently reintroduce the empty-env 401.
+  if [[ -f "$dropin" ]] && ! grep -q "serve-opencode.sh" "$dropin" 2>/dev/null; then
+    rm -f "$dropin"
+    ok "removed stale systemd override (bare opencode serve)"
+  fi
+  if systemctl --user daemon-reload 2>/dev/null \
+    && systemctl --user enable opencode.service >/dev/null 2>&1 \
+    && systemctl --user restart opencode.service 2>/dev/null; then
+    ok "systemd service restarted with Doppler env"
+  else
+    warn "could not (re)start systemd service — continuing with opencode service fallback"
+    return 1
+  fi
+}
+
 # ── Seed managed background service with keys ─────────────────────────
 # `opencode serve --service` is auto-spawned by the first CLI/TUI call and
 # inherits env from THAT parent. If it was spawned from a shell without
 # Doppler env, {env:} placeholders resolve empty and every inference fails
 # with HTTP 401 — while curl from a key-loaded shell still returns 200.
 # Bounce it here under `doppler run` so the running service holds the keys.
-# No secret value is printed, logged, or written to disk in this step.
-if have opencode && have doppler && [[ "$missing" == "0" ]]; then
+# Preferred path is the persistent systemd unit (survives reboot); the
+# `opencode service restart` below is a fallback for hosts without a systemd
+# user session. No secret value is printed, logged, or written to disk here.
+if install_systemd_service; then
+  sleep 3
+  if opencode api get /api/provider/cx 2>/dev/null | python3 -c '
+import json, sys
+key = json.load(sys.stdin)["data"]["settings"].get("apiKey", "")
+assert key and "{env:" not in key, "key did not resolve"
+print("provider cx key resolves in running service (%d chars)" % len(key))
+'; then
+    ok "provider keys resolve in running service"
+  else
+    warn "systemd restarted but cx key does not resolve — check: systemctl --user status opencode; bash $KIT/scripts/serve-opencode.sh --check"
+  fi
+elif have opencode && have doppler && [[ "$missing" == "0" ]]; then
   if doppler run --project="$DOPPLER_PROJECT" --config="$DOPPLER_CONFIG" -- \
       opencode service restart >/dev/null 2>&1; then
     ok "background service restarted with Doppler env"

@@ -129,6 +129,21 @@ step_github() {
   if have doppler && [[ -x "$helper_installer" ]] && \
     doppler run --project="$github_project" --config="$github_config" -- \
       sh -c 'test -n "${GITHUB_TOKEN:-${GH_TOKEN:-}}"' >/dev/null 2>&1; then
+    # `doppler run -- gh api ...` only authenticates that one process. Persist
+    # the token in gh's credential store as well, while unsetting token env
+    # vars for gh itself; otherwise gh refuses --with-token because it sees
+    # GITHUB_TOKEN as the active auth source.
+    if ! gh auth status >/dev/null 2>&1; then
+      if doppler run --project="$github_project" --config="$github_config" -- \
+        sh -c 'token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"; printf "%s\n" "$token" | env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --with-token' \
+        >/dev/null 2>&1; then
+        ok "GitHub CLI authenticated and credentials persisted"
+      else
+        warn "GitHub token found in Doppler but gh auth login failed"
+      fi
+    else
+      ok "GitHub CLI already authenticated"
+    fi
     "$helper_installer"
     local user
     user="$(doppler run --project="$github_project" --config="$github_config" -- \
@@ -202,6 +217,34 @@ step_doppler() {
     doppler whoami 2>/dev/null | head -12 || true
   else
     warn "Doppler auth gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
+  fi
+}
+
+# The binary installers run before Doppler is authenticated so a fresh VM can
+# still install without secrets. Re-check the authenticated wrappers here and
+# make the failure explicit instead of silently leaving gh/Depot unusable.
+step_cli_auth() {
+  log "CLI authentication (GitHub + Depot)"
+  if have gh; then
+    if gh api user --jq .login >/dev/null 2>&1; then
+      ok "gh authenticated"
+    elif [[ -n "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]]; then
+      export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
+      echo "$GH_TOKEN" | gh auth login --with-token >/dev/null 2>&1 || warn "gh token rejected"
+    else
+      warn "gh installed but not authenticated (set GH_TOKEN or configure GITHUB_TOKEN in Doppler)"
+    fi
+  else
+    warn "gh CLI missing after install"
+  fi
+  if have depot; then
+    if depot version >/dev/null 2>&1; then
+      ok "depot installed and authenticated"
+    else
+      warn "depot installed but not authenticated (set DEPOT_TOKEN or configure it in Doppler infrastructure/prd)"
+    fi
+  else
+    warn "Depot CLI missing after install"
   fi
 }
 
@@ -381,6 +424,7 @@ main() {
   step_kit
   step_install
   step_doppler
+  step_cli_auth
   step_github
   step_herdr_machines
   step_restore

@@ -32,7 +32,7 @@ for pname, p in cfg['providers'].items():
         assert key.startswith('{env:'), f'provider {pname}: apiKey must use {{env:}} (got {key[:12]}…)'
 # 5. required MCP servers
 servers = cfg.get('mcp', {}).get('servers', {})
-for s in ['exa', 'firecrawl', 'linear']:
+for s in ['exa', 'firecrawl', 'linear', 'neon']:
     assert s in servers, f'mcp server {s} missing'
 print('PASS: opencode.jsonc valid (providers=%s mcp=%s)' % (sorted(cfg['providers']), sorted(servers)))
 PY

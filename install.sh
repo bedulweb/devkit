@@ -424,6 +424,32 @@ install_depot() {
   fi
 }
 
+install_github_auth_from_doppler() {
+  # gh must persist the token; a transient `doppler run -- gh api` is not
+  # enough. The token env vars are removed only for gh auth login because gh
+  # refuses --with-token when GITHUB_TOKEN/GH_TOKEN is already exported.
+  have gh || return 0
+  have doppler || return 0
+  local project="${DEVKIT_GITHUB_DOPPLER_PROJECT:-vendor-access}"
+  local config="${DEVKIT_GITHUB_DOPPLER_CONFIG:-prd}"
+  if gh auth status >/dev/null 2>&1; then
+    ok "GitHub CLI already authenticated"
+    return 0
+  fi
+  if doppler run --project="$project" --config="$config" -- \
+    sh -c 'test -n "${GITHUB_TOKEN:-${GH_TOKEN:-}}"' >/dev/null 2>&1; then
+    if doppler run --project="$project" --config="$config" -- \
+      sh -c 'token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"; printf "%s\n" "$token" | env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --with-token' >/dev/null 2>&1; then
+      gh auth setup-git >/dev/null 2>&1 || true
+      ok "GitHub CLI authenticated from Doppler ($project/$config)"
+    else
+      warn "GitHub token found in Doppler but gh auth login failed"
+    fi
+  else
+    warn "No GitHub token in Doppler ($project/$config)"
+  fi
+}
+
 install_docker() {
   [[ "$WITH_DOCKER" == "1" ]] || return 0
   if have docker; then ok "docker $(docker --version)"; return; fi
@@ -756,6 +782,7 @@ main() {
 
   # always (all profiles)
   install_gh
+  install_github_auth_from_doppler
   install_jq
   install_rg
   install_fd
