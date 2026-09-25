@@ -108,8 +108,19 @@ step_install() {
   fi
   DEVKIT_WITH_HERDR="$WITH_HERDR" bash "$HOME/linux-devkit/install.sh" "${flags[@]}"
   export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${PATH}"
-  # shellcheck disable=SC1090
-  [[ -f "$HOME/.bashrc" ]] && source "$HOME/.bashrc" 2>/dev/null || true
+  # Pick up anything install.sh appended to .bashrc, but relax -e/-u first.
+  #
+  # The stock Ubuntu .bashrc opens with `[ -z "$PS1" ] && return`. Under `set -u`
+  # in a non-interactive shell, expanding an unset PS1 does not merely return
+  # non-zero — bash aborts the shell outright, so a trailing `|| true` never gets
+  # a chance to run. That silently killed run.sh right after install.sh, skipping
+  # every later step (GitHub auth, restore, skills, deps, verify).
+  if [[ -f "$HOME/.bashrc" ]]; then
+    set +eu
+    # shellcheck disable=SC1090
+    . "$HOME/.bashrc" >/dev/null 2>&1 || true
+    set -eu
+  fi
   export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${HOME}/go/bin:${PATH}"
   have devkit || die "devkit CLI missing after install"
   if [[ "$WITH_HERDR" == "1" ]]; then

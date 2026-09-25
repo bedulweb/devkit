@@ -6,7 +6,9 @@
   // Secrets live in Doppler (default: developer-workstation/dev):
   //   CX_API_KEY (or PINKGREEN_API_KEY), ROUTEID_API_KEY, EXA_API_KEY, FIRECRAWL_API_KEY
   // V2 server plugins. This list is the source of truth — install-opencode.sh
-  // renders __HINDSIGHT_PLUGIN_DIR__ to $HOME/.hindsight/coding-agents.
+  // renders __HINDSIGHT_PLUGIN_DIR__ to $HOME/.hindsight/coding-agents, and
+  // comments the entry out when that plugin is not installed (it is optional and
+  // a missing plugin path is a hard load error).
   // opencode-firecrawl needs no entry here: it auto-loads from
   // ~/.config/opencode/plugins/ (synced by scripts/install-opencode-plugins.sh).
   "plugins": [

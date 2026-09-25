@@ -50,7 +50,7 @@ collect_ports() { # collect_ports <array-name> <port>...
       [[ -n "${SPARE[$pid]:-}" ]] && continue
       [[ "$pid" == "1" ]] && continue
       _out+=("$pid")
-    done < <(ss -tlnp 2>/dev/null | grep -E "[:.]$port[[:space:]]" | grep -oP 'pid=\K[0-9]+' | sort -u || true)
+    done < <(ss -tlnp 2>/dev/null | grep -E "[:.]${port}[[:space:]]" | grep -oP 'pid=\K[0-9]+' | sort -u || true)
   done
 }
 

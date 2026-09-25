@@ -82,6 +82,14 @@ mkdir -p "$(dirname "$TARGET")"
 # Render to temp first so the backup check ignores the substituted plugin path.
 RENDERED="$(mktemp)"
 sed "s|__HINDSIGHT_PLUGIN_DIR__|${HOME}/.hindsight/coding-agents|g" "$TEMPLATE" >"$RENDERED"
+# hindsight-coding-agents is optional: install-opencode-plugins.sh only
+# presence-checks it and never installs it. Emitting its path unconditionally
+# left a dangling entry in "plugins", which is a hard load error for opencode.
+# Comment the entry out when the plugin is absent, leaving a valid empty array.
+if [[ ! -f "$HOME/.hindsight/coding-agents/index.js" ]]; then
+  sed -i "s|^\(\s*\)\"$HOME/\.hindsight/coding-agents\"\$|\1// hindsight-coding-agents not installed — enable with: bunx --yes @vectorize-io/hindsight-coding-agents@latest|" "$RENDERED"
+  warn "hindsight plugin absent — omitted from opencode.jsonc plugins[]"
+fi
 if [[ -f "$TARGET" ]] && ! cmp -s "$RENDERED" "$TARGET"; then
   cp -f "$TARGET" "$TARGET.bak.$(date +%Y%m%d%H%M%S)"
   ok "existing config backed up"
@@ -117,6 +125,31 @@ else
   warn "install-opencode-plugins.sh missing — plugins not synced"
 fi
 
+# Clear any pre-existing bare service before the unit is (re)started.
+stop_bare_service() {
+  # `opencode serve --service` is a singleton: when another instance already
+  # owns the service, a fresh one exits 0 straight away instead of serving.
+  # That has two bad effects — the unit's Restart policy sees an immediate clean
+  # exit, and the OLD instance keeps answering requests. If that old instance
+  # was started without the Doppler vault (a bare `opencode serve`), every
+  # {env:VAR} provider key resolves empty and inference fails with HTTP 401.
+  #
+  # The unit-managed service runs under `doppler run`, so it carries the vault
+  # keys in its environment. Use that to tell the two apart, rather than
+  # guessing from the process tree.
+  local pid killed=0
+  for pid in $(pgrep -f 'opencode serve --service' 2>/dev/null || true); do
+    if tr '\0' '\n' <"/proc/$pid/environ" 2>/dev/null | grep -q '^PINKGREEN_API_KEY='; then
+      continue
+    fi
+    log "stopping pre-existing bare opencode service (pid $pid, no Doppler env)"
+    kill "$pid" 2>/dev/null || true
+    killed=$((killed + 1))
+  done
+  [[ "$killed" -gt 0 ]] && sleep 2
+  return 0
+}
+
 # ── Persistent systemd service (survives reboot/restart) ──────────────────
 # Root cause of recurring HTTP 401: the background server was once started
 # under `doppler run` (keys in RAM) but systemd later restarted it bare —
@@ -132,21 +165,38 @@ install_systemd_service() {
   local unit="$unit_dir/opencode.service"
   local dropin="$unit_dir/opencode.service.d/override.conf"
   mkdir -p "$unit_dir" "$unit_dir/opencode.service.d"
+  # npx lives in nvm's node bin. MCP servers declared with an `npx` command
+  # (e.g. agentation) fail to spawn — silently, with only an INFO line in the
+  # journal — unless that directory is on the unit PATH. `firecrawl` survived
+  # only because it launches through `bunx`, which is already in ~/.bun/bin.
+  local node_bin=""
+  node_bin="$(ls -d "$HOME"/.nvm/versions/node/v*/bin 2>/dev/null | sort -V | tail -1 || true)"
+  local unit_path="$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:$HOME/.local/share/vite-plus/bin"
+  [[ -n "$node_bin" ]] && unit_path="$unit_path:$node_bin"
+  unit_path="$unit_path:/usr/local/bin:/usr/bin:/bin"
+
+  # UNIT_GEN is bumped whenever the unit body changes, so re-running this script
+  # regenerates units written by an older template instead of leaving them stale.
   if [[ ! -f "$unit" ]] || grep -q "EnvironmentFile=%h/.config/opencode/.env" "$unit" 2>/dev/null \
-    || ! grep -q ".local/share/vite-plus/bin" "$unit" 2>/dev/null; then
+    || ! grep -q "# UNIT_GEN=2" "$unit" 2>/dev/null; then
     cat >"$unit" <<EOF
+# UNIT_GEN=2
 [Unit]
 Description=OpenCode (Doppler-backed)
 After=network-online.target
 [Service]
-Environment="PATH=$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:$HOME/.local/share/vite-plus/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=$unit_path"
 ExecStart=$KIT/scripts/serve-opencode.sh --service
-Restart=always
+# on-failure, not always: \`opencode serve --service\` is a singleton and exits 0
+# immediately when another instance already owns the service. With
+# Restart=always that becomes a tight restart loop burning CPU.
+Restart=on-failure
 RestartSec=3
 [Install]
 WantedBy=default.target
 EOF
     ok "systemd unit → $unit (via serve-opencode.sh)"
+    [[ -n "$node_bin" ]] && ok "unit PATH includes nvm node bin → $node_bin"
   fi
   # Drop stale bare overrides (e.g. ExecStart=opencode serve --service without
   # doppler) that would silently reintroduce the empty-env 401.
@@ -154,6 +204,9 @@ EOF
     rm -f "$dropin"
     ok "removed stale systemd override (bare opencode serve)"
   fi
+  # A pre-existing bare service must go first, or the unit's singleton exits
+  # instantly and the keyless instance keeps answering requests (HTTP 401).
+  stop_bare_service
   if systemctl --user daemon-reload 2>/dev/null \
     && systemctl --user enable opencode.service >/dev/null 2>&1 \
     && systemctl --user restart opencode.service 2>/dev/null; then
