@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=root
-Environment=HOME=/root
-Environment=PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=/root/linux-devkit/scripts/restic-backup.sh forget
+User=__DEVKIT_USER__
+Environment=HOME=%h
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/linux-devkit/scripts/restic-backup.sh forget
