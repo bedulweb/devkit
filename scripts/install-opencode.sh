@@ -167,8 +167,11 @@ install_systemd_service() {
   mkdir -p "$unit_dir" "$unit_dir/opencode.service.d"
   # npx lives in nvm's node bin. MCP servers declared with an `npx` command
   # (e.g. agentation) fail to spawn — silently, with only an INFO line in the
-  # journal — unless that directory is on the unit PATH. `firecrawl` survived
+  # journal — unless node resolves on the unit PATH. `firecrawl` survived
   # only because it launches through `bunx`, which is already in ~/.bun/bin.
+  # Primary fix: ~/.local/bin/{node,npm,npx} symlinks (fix-node-path.sh),
+  # refreshed on every install. The baked nvm dir below is belt-and-braces
+  # fallback for units created before the symlinks existed.
   local node_bin=""
   node_bin="$(ls -d "$HOME"/.nvm/versions/node/v*/bin 2>/dev/null | sort -V | tail -1 || true)"
   local unit_path="$HOME/.opencode/bin:$HOME/.bun/bin:$HOME/.local/bin:$HOME/.local/share/vite-plus/bin"

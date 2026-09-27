@@ -349,6 +349,20 @@ install_nvm_node() {
   fi
   nvm use default >/dev/null 2>&1 || nvm use --lts >/dev/null 2>&1 || true
   ok "node $(node --version) npm $(npm --version)"
+  # stable node path: symlink node/npm/npx into ~/.local/bin so EVERY
+  # non-interactive context (systemd, MCP servers, cron) resolves node
+  # without nvm init and survives version bumps (see fix-node-path.sh).
+  if [[ -x "$HOME/linux-devkit/scripts/fix-node-path.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/fix-node-path.sh" || warn "node symlink refresh failed"
+  else
+    local _nvm_bin
+    _nvm_bin="$(ls -d "$HOME"/.nvm/versions/node/v*/bin 2>/dev/null | sort -V | tail -1 || true)"
+    if [[ -n "$_nvm_bin" ]]; then
+      for t in node npm npx; do [[ -x "$_nvm_bin/$t" ]] && ln -sf "$_nvm_bin/$t" "$LOCAL_BIN/$t"; done
+      ok "node symlinks → $LOCAL_BIN"
+    fi
+    unset _nvm_bin
+  fi
   # corepack for pnpm/yarn without global npm pollution
   if have corepack; then
     corepack enable >/dev/null 2>&1 || true

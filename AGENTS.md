@@ -120,3 +120,10 @@ Past agents got this wrong (SSH-ed a stranger's box). Do not repeat it.
    code (git) → manual `drestic restore` pulls data when needed. The R2
    bucket is shared; only ONE VPS writes at a time — `restic-backup.sh`
    runs `unlock` first to clear stale locks from the dead VPS.
+7. **node path rule (MCPs die without this):** node lives in nvm's versioned
+   dir — invisible to non-interactive spawns (systemd, opencode MCP servers
+   like agentation, cron). Fix = `~/.local/bin/{node,npm,npx}` symlinks via
+   `scripts/fix-node-path.sh` (auto-refreshed by `install.sh`, repair
+   manually anytime). Never bake a concrete `versions/node/vX` path into new
+   code; never debug MCP spawn failures before checking `node --version`
+   under `env -i PATH=$HOME/.local/bin:/usr/bin:/bin`.
