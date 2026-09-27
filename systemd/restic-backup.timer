@@ -1,0 +1,10 @@
+[Unit]
+Description=restic backup every 5 minutes (wazapin + zero + all projects)
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+Unit=restic-backup.service
+
+[Install]
+WantedBy=timers.target

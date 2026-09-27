@@ -78,3 +78,52 @@ Keep GitHub authentication Doppler-backed and host-specific. Preserve the
 property that GitHub tokens are never embedded in `url.*.insteadOf`, remote
 URLs, logs, or committed files. After changes, run `bash -n` on modified shell
 scripts, `git diff --check`, and the verification commands above.
+
+## OPS REALITY — read this before touching any machine (added 2026-09-27)
+
+Past agents got this wrong (SSH-ed a stranger's box). Do not repeat it.
+
+1. **The agent runs ON the devkit host itself** (as `root`, workspace
+   `/root/projects/apps/*`, installer checkout at `/root/linux-devkit`).
+   There is NO separate "devkit VM" to SSH into from here. All devkit work
+   is LOCAL. Never SSH anywhere unless the operator explicitly orders it
+   for that exact host + purpose.
+2. **`160.187.211.38` (alias `advin`) is NOT devkit.** It is a different
+   machine managed via `config/herdr-machines`. Its Dokku install
+   (`wordpress`, `mpwa`, `/home/ujang/infra`) is legacy, manual, unversioned,
+   and NOT part of this repo. This repo contains ZERO dokku references —
+   keep it that way.
+3. **Doppler map** (secrets live here, never in files):
+   - App/GitHub tokens: `vendor-access/prd`, `developer-workstation/dev`
+   - Backup (R2 + restic): `infrastructure/prd`
+     (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET=devkit-vm`,
+     `RESTIC_REPOSITORY=s3://.../devkit-vm/restic`, `RESTIC_PASSWORD`).
+   - Never `cat` a private key or print a secret value. The SSH private key
+     in Doppler is NOT for the agent to grab; only use it on explicit order,
+     then destroy the temp file immediately.
+4. **restic is part of the installer** (`install.sh` always-block, like
+   `gh`/`jq`; `--no-restic` to opt out). Binary → `~/.local/bin/restic`.
+   `drestic` (`~/.local/bin/drestic`) wraps restic with credentials mapped
+   from Doppler `infrastructure/prd` at runtime — no IPs, no secrets on
+   disk, works on any VPS rotation untouched.
+5. **Backup policy (systemd, root-only):** `restic-backup.timer` every
+   5 min → `/root/projects` (covers wazapin + zero + future apps;
+   excludes `node_modules/.git/dist/build/.next/.cache`), `--host devkit`
+   (stable logical name — NEVER the machine hostname, it rotates),
+   `--tag devkit-apps,auto`. `restic-forget.timer` daily
+   (`--keep-hourly 24 --keep-daily 7 --keep-weekly 4 --prune`).
+   Enable per VPS: `sudo bash ~/linux-devkit/scripts/install-restic-timer.sh`.
+   Restore is MANUAL (snapshots are point-in-time):
+   `drestic restore latest --target /tmp/restore --host devkit`.
+6. **Rotation flow (temp VPS every ~3 days):** operator buys VPS → SSHs in
+   → runs this installer → restic auto-installed → `devkit restore` pulls
+   code (git) → manual `drestic restore` pulls data when needed. The R2
+   bucket is shared; only ONE VPS writes at a time — `restic-backup.sh`
+   runs `unlock` first to clear stale locks from the dead VPS.
+7. **node path rule (MCPs die without this):** node lives in nvm's versioned
+   dir — invisible to non-interactive spawns (systemd, opencode MCP servers
+   like agentation, cron). Fix = `~/.local/bin/{node,npm,npx}` symlinks via
+   `scripts/fix-node-path.sh` (auto-refreshed by `install.sh`, repair
+   manually anytime). Never bake a concrete `versions/node/vX` path into new
+   code; never debug MCP spawn failures before checking `node --version`
+   under `env -i PATH=$HOME/.local/bin:/usr/bin:/bin`.

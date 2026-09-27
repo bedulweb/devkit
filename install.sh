@@ -27,6 +27,7 @@ WITH_HERDR=0
 WITH_GROK=0
 WITH_CCGRAM=0
 WITH_DOPPLER=1
+WITH_RESTIC=1
 NONINTERACTIVE=1
 ASSUME_YES=0
 SKIP_APT=0
@@ -70,6 +71,7 @@ Optional components:
   --with-grok         Ensure grok/agent path hints (does not download proprietary bin)
   --with-ccgram       Install ccgram (uv tool)
   --no-doppler        Skip Doppler CLI
+  --no-restic         Skip restic backup tool
   --skip-apt          Never call apt (user-space only)
   -y, --yes           Non-interactive (default)
 
@@ -90,6 +92,7 @@ while [[ $# -gt 0 ]]; do
     --with-grok) WITH_GROK=1; shift ;;
     --with-ccgram) WITH_CCGRAM=1; shift ;;
     --no-doppler) WITH_DOPPLER=0; shift ;;
+    --no-restic) WITH_RESTIC=0; shift ;;
     --skip-apt) SKIP_APT=1; shift ;;
     -y|--yes) ASSUME_YES=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -221,7 +224,7 @@ install_apt_base() {
   log "apt base packages"
   sudo apt-get update -y
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates curl wget git unzip zip tar xz-utils \
+    ca-certificates curl wget git unzip zip tar xz-utils bzip2 \
     build-essential pkg-config \
     python3 python3-pip python3-venv python3-yaml \
     jq tree tmux htop openssh-client \
@@ -346,6 +349,20 @@ install_nvm_node() {
   fi
   nvm use default >/dev/null 2>&1 || nvm use --lts >/dev/null 2>&1 || true
   ok "node $(node --version) npm $(npm --version)"
+  # stable node path: symlink node/npm/npx into ~/.local/bin so EVERY
+  # non-interactive context (systemd, MCP servers, cron) resolves node
+  # without nvm init and survives version bumps (see fix-node-path.sh).
+  if [[ -x "$HOME/linux-devkit/scripts/fix-node-path.sh" ]]; then
+    bash "$HOME/linux-devkit/scripts/fix-node-path.sh" || warn "node symlink refresh failed"
+  else
+    local _nvm_bin
+    _nvm_bin="$(ls -d "$HOME"/.nvm/versions/node/v*/bin 2>/dev/null | sort -V | tail -1 || true)"
+    if [[ -n "$_nvm_bin" ]]; then
+      for t in node npm npx; do [[ -x "$_nvm_bin/$t" ]] && ln -sf "$_nvm_bin/$t" "$LOCAL_BIN/$t"; done
+      ok "node symlinks → $LOCAL_BIN"
+    fi
+    unset _nvm_bin
+  fi
   # corepack for pnpm/yarn without global npm pollution
   if have corepack; then
     corepack enable >/dev/null 2>&1 || true
@@ -411,6 +428,50 @@ install_doppler() {
   install -m 755 "$bin" "$LOCAL_BIN/doppler"
   rm -rf "$tmpd"
   ok "doppler $($LOCAL_BIN/doppler --version | head -1)"
+}
+
+install_restic() {
+  # restic backup tool — always installed (any VPS, any IP), like opencode.
+  # No hardcoded hosts/IPs: credentials resolve from Doppler at runtime
+  # via the `drestic` wrapper (R2_* → AWS_*, repo + password from
+  # infrastructure/prd). Restore stays manual (snapshots are point-in-time).
+  [[ "$WITH_RESTIC" == "1" ]] || return 0
+  for candidate in "$HOME/linux-devkit/scripts/install-restic.sh" \
+    "$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)/scripts/install-restic.sh"; do
+    if [[ -x "$candidate" ]]; then
+      bash "$candidate"
+      return 0
+    fi
+  done
+  # fallback when install.sh runs standalone (curl-pipe) without the kit:
+  # minimal inline install of the pinned version.
+  local ver="0.19.1" arch tgz bin
+  case "$(uname -m)" in
+    x86_64|amd64) arch="amd64" ;;
+    aarch64|arm64) arch="arm64" ;;
+    *) warn "no restic for $(uname -m)"; return 0 ;;
+  esac
+  if [[ -x "$LOCAL_BIN/restic" ]]; then ok "restic $($LOCAL_BIN/restic version | head -1)"; return 0; fi
+  log "install restic $ver (standalone fallback)"
+  tgz="$CACHE_DIR/restic_${ver}_linux_${arch}.bz2"
+  download "https://github.com/restic/restic/releases/download/v${ver}/restic_${ver}_linux_${arch}.bz2" "$tgz" \
+    || { warn "restic download failed"; return 0; }
+  bin="$CACHE_DIR/restic_${ver}_linux_${arch}"
+  if have bzip2; then
+    bzip2 -dck "$tgz" > "$bin"
+  elif python3 -c 'import bz2' 2>/dev/null; then
+    python3 - "$tgz" "$bin" <<'PY'
+import bz2, sys
+with bz2.open(sys.argv[1], 'rb') as f, open(sys.argv[2], 'wb') as o:
+    o.write(f.read())
+PY
+  else
+    warn "need bzip2 for restic — clone the kit and run scripts/install-restic.sh"
+    return 0
+  fi
+  chmod +x "$bin"
+  install -m 755 "$bin" "$LOCAL_BIN/restic"
+  ok "restic $($LOCAL_BIN/restic version | head -1)"
 }
 
 install_depot() {
@@ -630,7 +691,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler depot direnv starship; do
+    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler depot direnv starship restic; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -790,6 +851,7 @@ main() {
   install_uv
   install_nvm_node
   install_depot
+  install_restic
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun

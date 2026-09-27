@@ -1,0 +1,11 @@
+[Unit]
+Description=restic forget+prune daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=15min
+Unit=restic-forget.service
+
+[Install]
+WantedBy=timers.target
