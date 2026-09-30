@@ -31,7 +31,7 @@ Legacy alias: `SABER_API_KEY` is accepted as fallback for `PINKGREEN_API_KEY`
 
 ## Models
 
-- `cx`: `cx/gpt-5.6-sol`, `cx/gpt-5.6-terra`, `cx/gpt-5.6-luna`, `cx/gpt-6-astra`, `cx/gpt-6`, `cx/gpt-6-luna`, `cx/gpt-6-sol`, `cx/gpt-6-terra`
+- `cx`: `cx/gpt-5.6-sol`, `cx/gpt-5.6-terra`, `cx/gpt-5.6-luna`, `cx/gpt-6-astra`, `cx/gpt-6`, `cx/gpt-6-luna`, `cx/gpt-6-sol`, `cx/gpt-6.1-sol`, `cx/gpt-6-terra`
 - CX model variants: `none`, `low`, `medium`, and `high` reasoning effort.
 - `hv`: `hv/deepseek-ai/deepseek-v4.1-flash`
 - `routeid`: `kimi-k3`, `glm-5.2`, `deepseek-v4-pro-0813`,

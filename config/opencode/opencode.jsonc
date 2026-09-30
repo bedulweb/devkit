@@ -101,6 +101,17 @@
             { "id": "high", "settings": { "reasoningEffort": "high" } }
           ]
         },
+        "gpt-6.1-sol": {
+          "modelID": "cx/gpt-6.1-sol",
+          "name": "CX GPT-6.1 Sol",
+          "limit": { "context": 372000, "output": 128000 },
+          "variants": [
+            { "id": "none", "settings": { "reasoningEffort": "none" } },
+            { "id": "low", "settings": { "reasoningEffort": "low" } },
+            { "id": "medium", "settings": { "reasoningEffort": "medium" } },
+            { "id": "high", "settings": { "reasoningEffort": "high" } }
+          ]
+        },
         "gpt-6-terra": {
           "modelID": "cx/gpt-6-terra",
           "name": "CX GPT-6 Terra",
