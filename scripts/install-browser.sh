@@ -7,13 +7,19 @@
 #   "[browser.disconnected]". agent-browser CLI jalan headless via CDP
 #   langsung, jadi cocok untuk VPS.
 #
-# Auto-close (biar tab/sesi ga numpuk):
-#   1) Daemon agent-browser otomatis mati setelah idle
+# Auto-close (biar tab/sesi ga numpuk + biar hemat Kernel):
+#   1) Kernel timeout (KERNEL_TIMEOUT_SECONDS, default kita 180 detik vs bawaan
+#      300): idle auto-delete di sisi cloud. Ditagih cuma active runtime.
+#   2) Daemon agent-browser otomatis mati setelah idle
 #      (AGENT_BROWSER_IDLE_TIMEOUT_MS, default kita 10 menit vs bawaan 1 jam).
 #      Tanpa --restore, shutdown membuang tab transient.
-#   2) Cron reaper tiap 15 menit: kalau ada sesi nganggur >15 menit dan tidak
+#   3) Cron reaper tiap 15 menit: kalau ada sesi nganggur >15 menit dan tidak
 #      ada proses agent-browser aktif, jalankan `close --all`.
-#   3) Wajib pola pakai: session bernama per tugas + `close` di akhir.
+#   4) Wajib pola pakai: session bernama per tugas + `close` di akhir.
+#
+# Provider default: Kernel cloud (hemat: headless). KERNEL_API_KEY wajib dari
+# Doppler (developer-workstation/dev) — tidak pernah di-hardcode di repo.
+# Override lokal: AGENT_BROWSER_PROVIDER="" agent-browser open ...
 #
 # Usage:
 #   bash ~/linux-devkit/scripts/install-browser.sh
@@ -65,6 +71,42 @@ else
 fi
 export AGENT_BROWSER_IDLE_TIMEOUT_MS="$IDLE_MS"
 
+# ── Kernel cloud provider defaults (idempotent, Doppler-backed) ──
+# Non-secret defaults; guard [ -z ... ] biar override eksplisit user menang.
+# Nilai default hemat: headless ($0.0000166667/detik) + stealth gratis + timeout 180 dtk.
+if grep -q "AGENT_BROWSER_PROVIDER" "$ENV_FILE"; then
+  ok "agent-browser provider sudah ada di $ENV_FILE"
+else
+  {
+    echo "# devkit: agent-browser → Kernel cloud (default hemat)"
+    echo "[ -z \"\${AGENT_BROWSER_PROVIDER:-}\" ] && export AGENT_BROWSER_PROVIDER=\"kernel\""
+    echo "[ -z \"\${KERNEL_TIMEOUT_SECONDS:-}\" ] && export KERNEL_TIMEOUT_SECONDS=\"180\""
+    echo "[ -z \"\${KERNEL_HEADLESS:-}\" ] && export KERNEL_HEADLESS=\"true\""
+    echo "[ -z \"\${KERNEL_STEALTH:-}\" ] && export KERNEL_STEALTH=\"true\""
+  } >>"$ENV_FILE"
+  ok "kernel provider defaults → $ENV_FILE"
+fi
+[ -z "${AGENT_BROWSER_PROVIDER:-}" ] && export AGENT_BROWSER_PROVIDER="kernel"
+[ -z "${KERNEL_TIMEOUT_SECONDS:-}" ] && export KERNEL_TIMEOUT_SECONDS="180"
+[ -z "${KERNEL_HEADLESS:-}" ] && export KERNEL_HEADLESS="true"
+[ -z "${KERNEL_STEALTH:-}" ] && export KERNEL_STEALTH="true"
+
+# ── verify KERNEL_API_KEY resolvable (names + status only, never print value) ──
+if [[ -n "${KERNEL_API_KEY:-}" ]]; then
+  ok "KERNEL_API_KEY SET (${#KERNEL_API_KEY} chars, dari env)"
+else
+  DOPPLER_PROJECT="${DEVKIT_CODEX_DOPPLER_PROJECT:-developer-workstation}"
+  DOPPLER_CONFIG="${DEVKIT_CODEX_DOPPLER_CONFIG:-dev}"
+  if command -v doppler >/dev/null 2>&1 && K_VAL="$(doppler secrets get KERNEL_API_KEY --project="$DOPPLER_PROJECT" --config="$DOPPLER_CONFIG" --plain 2>/dev/null || true)" && [[ -n "$K_VAL" ]]; then
+    export KERNEL_API_KEY="$K_VAL"
+    ok "KERNEL_API_KEY SET (${#KERNEL_API_KEY} chars, dari Doppler $DOPPLER_PROJECT/$DOPPLER_CONFIG)"
+  else
+    warn "KERNEL_API_KEY NOT SET — set di Doppler: doppler secrets set KERNEL_API_KEY --project $DOPPLER_PROJECT --config $DOPPLER_CONFIG"
+    warn "agent-browser akan fallback ke Chromium lokal sampai key tersedia"
+  fi
+  unset K_VAL
+fi
+
 # ── cron reaper (idempotent) ──
 REAP="$HOME/linux-devkit/scripts/browser-reap.sh"
 CRON_LINE="*/15 * * * * AGENT_BROWSER_IDLE_TIMEOUT_MS=\"$IDLE_MS\" bash \"$REAP\" >>\"$HOME/.linux-devkit/browser-reap.log\" 2>&1"
@@ -90,6 +132,10 @@ Pola pakai (wajib session bernama + close di akhir):
 
 Aturan:
 - Jangan pakai sesi default (shared semua agent).
-- Selalu `close` di akhir tugas; daemon juga auto-mati setelah idle.
+- Selalu `close` di akhir tugas; Kernel juga auto-delete setelah idle
+  (KERNEL_TIMEOUT_SECONDS=180), daemon auto-mati setelah idle.
+- Default provider = Kernel cloud (hemat headless). Override lokal:
+  AGENT_BROWSER_PROVIDER="" agent-browser open https://example.com
 - Cek sesi: agent-browser session list
+- Cek browser cloud aktif: curl -H "Authorization: Bearer $KERNEL_API_KEY" https://api.onkernel.com/browsers
 EOF

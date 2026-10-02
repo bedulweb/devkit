@@ -778,11 +778,19 @@ if [ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" = "1" ] && command -v doppler >/dev/null 2>
   _devkit_secret EXA_API_KEY
   _devkit_secret FIRECRAWL_API_KEY
   _devkit_secret FIGMA_API_KEY
+  _devkit_secret KERNEL_API_KEY
   # legacy alias: SABER_API_KEY == PINKGREEN_API_KEY (same endpoint, old name)
   _devkit_secret SABER_API_KEY
   [ -n "${PINKGREEN_API_KEY:-}" ] && [ -z "${SABER_API_KEY:-}" ] && export SABER_API_KEY="$PINKGREEN_API_KEY"
   [ -z "${PINKGREEN_API_KEY:-}" ] && [ -n "${SABER_API_KEY:-}" ] && export PINKGREEN_API_KEY="$SABER_API_KEY"
   [ -n "${PINKGREEN_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
+  # agent-browser → Kernel cloud provider (default hemat: headless + auto-close).
+  # KERNEL_API_KEY wajib dari Doppler (developer-workstation/dev); jangan hardcode nilai di repo.
+  # Guard [ -z ... ] biar override eksplisit user tetap menang.
+  [ -z "${AGENT_BROWSER_PROVIDER:-}" ] && export AGENT_BROWSER_PROVIDER="kernel"
+  [ -z "${KERNEL_TIMEOUT_SECONDS:-}" ] && export KERNEL_TIMEOUT_SECONDS="180"
+  [ -z "${KERNEL_HEADLESS:-}" ] && export KERNEL_HEADLESS="true"
+  [ -z "${KERNEL_STEALTH:-}" ] && export KERNEL_STEALTH="true"
   unset _devkit_doppler_project _devkit_doppler_config _devkit_name _devkit_value
   unset -f _devkit_secret 2>/dev/null || true
 fi

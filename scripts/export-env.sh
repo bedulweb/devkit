@@ -72,9 +72,15 @@ if [[ "${DEVKIT_DOPPLER_AUTOLOAD:-1}" == "1" ]] && command -v doppler >/dev/null
   _doppler_secret FIRECRAWL_API_KEY
   _doppler_secret FIGMA_API_KEY
   _doppler_secret SABER_API_KEY
+  _doppler_secret KERNEL_API_KEY
   [[ -n "${PINKGREEN_API_KEY:-}" && -z "${SABER_API_KEY:-}" ]] && export SABER_API_KEY="$PINKGREEN_API_KEY"
   [[ -z "${PINKGREEN_API_KEY:-}" && -n "${SABER_API_KEY:-}" ]] && export PINKGREEN_API_KEY="$SABER_API_KEY"
   [[ -n "${PINKGREEN_API_KEY:-}" && -z "${OPENAI_API_KEY:-}" ]] && export OPENAI_API_KEY="$PINKGREEN_API_KEY"
+  # agent-browser → Kernel cloud provider (default hemat). Guard biar override user menang.
+  [[ -z "${AGENT_BROWSER_PROVIDER:-}" ]] && export AGENT_BROWSER_PROVIDER="kernel"
+  [[ -z "${KERNEL_TIMEOUT_SECONDS:-}" ]] && export KERNEL_TIMEOUT_SECONDS="180"
+  [[ -z "${KERNEL_HEADLESS:-}" ]] && export KERNEL_HEADLESS="true"
+  [[ -z "${KERNEL_STEALTH:-}" ]] && export KERNEL_STEALTH="true"
   unset _codex_doppler_project _codex_doppler_config
   unset -f _doppler_secret
 fi
