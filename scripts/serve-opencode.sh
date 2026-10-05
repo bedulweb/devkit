@@ -23,6 +23,19 @@ REQUIRED=(PINKGREEN_API_KEY ROUTEID_API_KEY EXA_API_KEY FIRECRAWL_API_KEY)
 have() { command -v "$1" >/dev/null 2>&1; }
 die() { printf 'serve-opencode: %s\n' "$*" >&2; exit 1; }
 
+# Claude remote client (non-secret runtime env): the opencode-with-claude
+# plugin reads CLAUDE_PROXY_REMOTE_URL from the process environment, which a
+# bare systemd unit would otherwise lack (the .env file only feeds {env:}
+# placeholders, not plugin process env — without it the plugin falls back
+# to a local proxy and every chat fails). Written by
+# install-opencode-claude-remote.sh; already-exported vars win.
+if [[ -f "$HOME/.config/opencode/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$HOME/.config/opencode/.env"
+  set +a
+fi
+
 have opencode || die "opencode not found (run: bash ~/linux-devkit/scripts/install-opencode.sh)"
 have doppler || die "doppler CLI not found (run: bash ~/linux-devkit/install.sh)"
 doppler whoami >/dev/null 2>&1 || die "doppler not authenticated (set DOPPLER_TOKEN or run: doppler login)"
