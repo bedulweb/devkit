@@ -586,6 +586,35 @@ install_herdr() {
   fi
 }
 
+# SSH login → langsung masuk herdr. Blok ditaruh paling bawah ~/.bashrc supaya
+# semua PATH sudah siap. Re-run memindahkan blok ke bawah lagi (installer lain
+# seperti bun suka append setelahnya). Opt-out: DEVKIT_HERDR_AUTOSTART=0 saat
+# install, atau NO_HERDR=1 per sesi (ssh -t host 'NO_HERDR=1 bash -l').
+ensure_herdr_autostart() {
+  [[ "$WITH_HERDR" == "1" ]] || return 0
+  local rc="$HOME/.bashrc"
+  local begin="# >>> linux-devkit herdr-autostart >>>"
+  local end="# <<< linux-devkit herdr-autostart <<<"
+  touch "$rc"
+  if grep -qF "$begin" "$rc"; then
+    sed -i "\|^${begin}\$|,\|^${end}\$|d" "$rc"
+  fi
+  if [[ "${DEVKIT_HERDR_AUTOSTART:-1}" == "0" ]]; then
+    ok "herdr autostart off (DEVKIT_HERDR_AUTOSTART=0)"
+    return 0
+  fi
+  cat >>"$rc" <<'EOF'
+# >>> linux-devkit herdr-autostart >>>
+# interaktif + SSH + belum di dalam herdr → attach/launch herdr
+if [[ $- == *i* && -n "${SSH_TTY:-}" && -z "${HERDR_ENV:-}" && -z "${NO_HERDR:-}" ]] \
+   && command -v herdr >/dev/null 2>&1; then
+  exec herdr
+fi
+# <<< linux-devkit herdr-autostart <<<
+EOF
+  ok "herdr autostart on SSH login → ~/.bashrc"
+}
+
 install_ccgram() {
   [[ "$WITH_CCGRAM" == "1" ]] || return 0
   export PATH="$HOME/.local/bin:$PATH"
@@ -910,6 +939,7 @@ main() {
   install_devkit_cli
   write_devkit_env
   write_cloud_init_snippet
+  ensure_herdr_autostart
 
   # Agent skills pack (optional, needs network + npx/bun)
   if [[ "$PROFILE" != "minimal" ]] && [[ -x "$HOME/linux-devkit/scripts/install-skills.sh" || -x "$DEVKIT_HOME/../linux-devkit/scripts/install-skills.sh" ]]; then
