@@ -39,8 +39,8 @@ PATCH="$KIT/config/opencode/plugins/opencode-with-claude-remote.patch"
 PLUGIN_NAME="opencode-with-claude"
 SEED="$HOME/.cache/opencode/node_modules/$PLUGIN_NAME"
 BUILD_DIR="${CLAUDE_PLUGIN_BUILD_DIR:-$HOME/projects/apps/opencode-with-claude}"
-REPO="${CLAUDE_PLUGIN_REPO:-https://github.com/ianjwhite99/opencode-with-claude}"
-REF="${CLAUDE_PLUGIN_REF:-main}"
+REPO="${CLAUDE_PLUGIN_REPO:-https://github.com/bedulweb/opencode-with-claude}"
+REF="${CLAUDE_PLUGIN_REF:-v1.11.1-remote.1}"
 TEST_CHAT=0
 [[ "${1:-}" == "--test-chat" ]] && TEST_CHAT=1
 
