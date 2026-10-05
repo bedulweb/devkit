@@ -1,12 +1,16 @@
 diff --git a/src/index.ts b/src/index.ts
-index 4ec06a7..c1385e4 100644
+index 4ec06a7..2d650ac 100644
 --- a/src/index.ts
 +++ b/src/index.ts
-@@ -26,6 +26,20 @@ import {
+@@ -26,6 +26,28 @@ import {
  const PLUGIN_ID = "opencode-with-claude"
  const ANTHROPIC = "anthropic"
  const MAX_HUMAN_MESSAGES = 4096
 +const REMOTE_ENV = "CLAUDE_PROXY_REMOTE_URL"
++// Default remote proxy (client VMs depend on Tailscale anyway): used when
++// the env var is unset, so a bare service can never silently fall back to
++// a local proxy. Override per-machine via CLAUDE_PROXY_REMOTE_URL.
++const DEFAULT_REMOTE_URL = "http://100.74.3.7:3456"
 +
 +/**
 + * Remote mode (client): use a proxy running on another machine instead of
@@ -16,14 +20,18 @@ index 4ec06a7..c1385e4 100644
 + * in which case the local-proxy lifecycle below runs unchanged.
 + */
 +function getRemoteBaseURL(): string | undefined {
-+  const raw = process.env[REMOTE_ENV]?.trim()
++  // Explicit opt-out back to local-proxy mode.
++  if ((process.env[REMOTE_ENV] ?? "").trim().toLowerCase() === "local") {
++    return undefined
++  }
++  const raw = (process.env[REMOTE_ENV]?.trim() || DEFAULT_REMOTE_URL).trim()
 +  if (!raw) return undefined
 +  return raw.replace(/\/+$/, "").replace(/\/v1$/, "")
 +}
  
  // ---------------------------------------------------------------------------
  // Shared runtime: the proxy lifecycle is identical on both OpenCode generations
-@@ -48,6 +62,31 @@ interface SharedRuntime {
+@@ -48,6 +70,31 @@ interface SharedRuntime {
  let sharedRuntime: SharedRuntime | undefined
  
  async function acquireRuntime(log: LogFn) {
