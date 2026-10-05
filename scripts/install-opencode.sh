@@ -90,6 +90,14 @@ if [[ ! -f "$HOME/.hindsight/coding-agents/index.js" ]]; then
   sed -i "s|^\(\s*\)\"$HOME/\.hindsight/coding-agents\"\$|\1// hindsight-coding-agents not installed — enable with: bunx --yes @vectorize-io/hindsight-coding-agents@latest|" "$RENDERED"
   warn "hindsight plugin absent — omitted from opencode.jsonc plugins[]"
 fi
+# opencode-with-claude (remote Claude Max client): same rule — a missing
+# plugin path is a hard load error. The seed is created by
+# install-opencode-claude-remote.sh, which runs below and uncomments the
+# entry once the seed exists.
+if [[ ! -f "$HOME/.cache/opencode/node_modules/opencode-with-claude/dist/index.js" ]]; then
+  sed -i 's|^\(\s*\)"opencode-with-claude"$|\1// opencode-with-claude not installed — run: bash ~/linux-devkit/scripts/install-opencode-claude-remote.sh|' "$RENDERED"
+  warn "opencode-with-claude seed absent — omitted from opencode.jsonc plugins[]"
+fi
 if [[ -f "$TARGET" ]] && ! cmp -s "$RENDERED" "$TARGET"; then
   cp -f "$TARGET" "$TARGET.bak.$(date +%Y%m%d%H%M%S)"
   ok "existing config backed up"
@@ -123,6 +131,16 @@ if [[ -x "$KIT/scripts/install-opencode-plugins.sh" ]]; then
   bash "$KIT/scripts/install-opencode-plugins.sh" || warn "plugin setup had warnings (see above)"
 else
   warn "install-opencode-plugins.sh missing — plugins not synced"
+fi
+
+# ── Claude Max remote client (Tailscale → liacorp proxy) ─────────────
+# Runs after config render + plugin sync so it can seed the plugin cache,
+# uncomment the plugins entry, and restart the service below with the
+# plugin loaded. Safe to skip on hosts without Tailscale access.
+if [[ -x "$KIT/scripts/install-opencode-claude-remote.sh" ]]; then
+  bash "$KIT/scripts/install-opencode-claude-remote.sh" || warn "claude-remote setup had warnings (see above)"
+else
+  warn "install-opencode-claude-remote.sh missing — Claude remote client not configured"
 fi
 
 # Clear any pre-existing bare service before the unit is (re)started.

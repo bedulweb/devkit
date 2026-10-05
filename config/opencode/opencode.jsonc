@@ -11,10 +11,49 @@
   // a missing plugin path is a hard load error).
   // opencode-firecrawl needs no entry here: it auto-loads from
   // ~/.config/opencode/plugins/ (synced by scripts/install-opencode-plugins.sh).
+  // opencode-with-claude (bare package name) resolves to the remote-patched
+  // seed at ~/.cache/opencode/node_modules/opencode-with-claude, installed by
+  // scripts/install-opencode-claude-remote.sh. install-opencode.sh comments
+  // this entry out when the seed is absent (same rule as hindsight).
   "plugins": [
-    "__HINDSIGHT_PLUGIN_DIR__"
+    "__HINDSIGHT_PLUGIN_DIR__",
+    "opencode-with-claude"
   ],
   "providers": {
+    // Claude Max via remote Meridian proxy over Tailscale (client mode — no
+    // local `claude auth login` needed). The plugin overwrites baseURL per
+    // request and attaches session headers; without them long requests get
+    // HTTP 402 (cold lineage). apiKey resolves from ~/.config/opencode/.env
+    // (CLAUDE_PROXY_API_KEY=dummy), written by install-opencode-claude-remote.sh.
+    "anthropic": {
+      "env": ["CLAUDE_PROXY_API_KEY"],
+      "settings": {
+        "baseURL": "http://100.74.3.7:3456/v1",
+        "apiKey": "{env:CLAUDE_PROXY_API_KEY}"
+      },
+      "models": {
+        "claude-sonnet-5-5": {
+          "name": "Claude Sonnet 5.5 (remote)",
+          "limit": { "context": 200000, "output": 64000 }
+        },
+        "claude-opus-5-5": {
+          "name": "Claude Opus 5.5 (remote)",
+          "limit": { "context": 1000000, "output": 128000 }
+        },
+        "claude-opus-4-8": {
+          "name": "Claude Opus 4.8 (remote)",
+          "limit": { "context": 1000000, "output": 128000 }
+        },
+        "claude-sonnet-5": {
+          "name": "Claude Sonnet 5 (remote)",
+          "limit": { "context": 200000, "output": 64000 }
+        },
+        "claude-haiku-4-5": {
+          "name": "Claude Haiku 4.5 (remote)",
+          "limit": { "context": 200000, "output": 64000 }
+        }
+      }
+    },
     "cx": {
       "name": "SaberGaming CX",
       "env": ["PINKGREEN_API_KEY"],
