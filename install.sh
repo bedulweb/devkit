@@ -28,6 +28,7 @@ WITH_GROK=0
 WITH_CCGRAM=0
 WITH_DOPPLER=1
 WITH_RESTIC=1
+WITH_TAILSCALE=1
 NONINTERACTIVE=1
 ASSUME_YES=0
 SKIP_APT=0
@@ -72,6 +73,8 @@ Optional components:
   --with-ccgram       Install ccgram (uv tool)
   --no-doppler        Skip Doppler CLI
   --no-restic         Skip restic backup tool
+  --with-tailscale    Install Tailscale + auto-join via Doppler/env (default on)
+  --no-tailscale      Skip Tailscale
   --skip-apt          Never call apt (user-space only)
   -y, --yes           Non-interactive (default)
 
@@ -93,6 +96,8 @@ while [[ $# -gt 0 ]]; do
     --with-ccgram) WITH_CCGRAM=1; shift ;;
     --no-doppler) WITH_DOPPLER=0; shift ;;
     --no-restic) WITH_RESTIC=0; shift ;;
+    --with-tailscale) WITH_TAILSCALE=1; shift ;;
+    --no-tailscale) WITH_TAILSCALE=0; shift ;;
     --skip-apt) SKIP_APT=1; shift ;;
     -y|--yes) ASSUME_YES=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -120,6 +125,8 @@ fi
 # env override (run.sh / .devkit.env)
 if [[ "${DEVKIT_WITH_HERDR:-}" == "1" ]]; then WITH_HERDR=1; fi
 if [[ "${DEVKIT_WITH_HERDR:-}" == "0" ]]; then WITH_HERDR=0; fi
+if [[ "${DEVKIT_WITH_TAILSCALE:-}" == "1" ]]; then WITH_TAILSCALE=1; fi
+if [[ "${DEVKIT_WITH_TAILSCALE:-}" == "0" ]]; then WITH_TAILSCALE=0; fi
 
 # ── helpers ───────────────────────────────────────────────────────────
 ensure_dirs() {
@@ -430,6 +437,26 @@ install_doppler() {
   ok "doppler $($LOCAL_BIN/doppler --version | head -1)"
 }
 
+install_tailscale() {
+  # Tailscale mesh VPN — install binary selalu, join hanya kalau ada auth key.
+  # Key source: $TAILSCALE_AUTH_KEY atau Doppler TAILSCALE_AUTH_KEY @
+  # ${DEVKIT_TAILSCALE_DOPPLER_PROJECT:-infrastructure}/${DEVKIT_TAILSCALE_DOPPLER_CONFIG:-dev}.
+  # Buat key di https://login.tailscale.com/admin/settings/keys, simpan via: devkit set-tailscale-key
+  [[ "$WITH_TAILSCALE" == "1" ]] || return 0
+  for candidate in "$HOME/linux-devkit/scripts/install-tailscale.sh" \
+    "$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)/scripts/install-tailscale.sh"; do
+    if [[ -x "$candidate" ]]; then
+      bash "$candidate"
+      return 0
+    fi
+  done
+  # fallback standalone (curl-pipe tanpa kit): install binary saja, tanpa auto-join
+  if command -v tailscale >/dev/null 2>&1; then ok "tailscale $(tailscale --version | head -1)"; return 0; fi
+  log "install Tailscale (standalone fallback)"
+  curl -fsSL https://tailscale.com/install.sh | sh
+  ok "tailscale $(tailscale --version | head -1)"
+}
+
 install_restic() {
   # restic backup tool — always installed (any VPS, any IP), like opencode.
   # No hardcoded hosts/IPs: credentials resolve from Doppler at runtime
@@ -691,7 +718,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler depot direnv starship restic; do
+    for c in git curl gh jq rg fd fzf uv node npm bun wrangler python3 docker flutter herdr doppler depot direnv starship restic tailscale; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -860,6 +887,7 @@ main() {
   install_nvm_node
   install_depot
   install_restic
+  install_tailscale
 
   if [[ "$PROFILE" != "minimal" ]]; then
     install_bun

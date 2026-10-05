@@ -40,7 +40,7 @@ shift || true
 case "$cmd" in
   doctor)
     echo "linux-devkit doctor"
-    for c in git curl gh jq rg fd fzf uv node npm bun wrangler go opencode restic python3 docker flutter herdr doppler depot direnv starship pm2; do
+    for c in git curl gh jq rg fd fzf uv node npm bun wrangler go opencode restic python3 docker flutter herdr doppler depot direnv starship pm2 tailscale; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  ✓ %-12s %s\n' "$c" "$(command -v "$c")"
       else
@@ -215,6 +215,44 @@ PY
     echo "CLOUDFLARE_API_TOKEN saved in infrastructure/dev."
     ;;
 
+  set-tailscale-key)
+    command -v doppler >/dev/null 2>&1 || { echo "Doppler CLI is required." >&2; exit 1; }
+    read -r -s -p "Tailscale auth key - tskey-auth-... (input hidden): " token
+    printf '\n'
+    [[ -n "$token" ]] || { echo "Token cannot be empty." >&2; exit 1; }
+    case "$token" in tskey-*) ;; *) echo "Warning: tidak diawali tskey- — lanjut menyimpan." >&2 ;; esac
+    printf '%s' "$token" | doppler secrets set TAILSCALE_AUTH_KEY --project="${DEVKIT_TAILSCALE_DOPPLER_PROJECT:-${INFRA_DOPPLER_PROJECT:-infrastructure}}" --config="${DEVKIT_TAILSCALE_DOPPLER_CONFIG:-${INFRA_DOPPLER_CONFIG:-dev}}" --no-interactive >/dev/null
+    unset token
+    echo "TAILSCALE_AUTH_KEY saved in ${DEVKIT_TAILSCALE_DOPPLER_PROJECT:-${INFRA_DOPPLER_PROJECT:-infrastructure}}/${DEVKIT_TAILSCALE_DOPPLER_CONFIG:-${INFRA_DOPPLER_CONFIG:-dev}}."
+    echo "Join: devkit tailscale-up"
+    ;;
+
+  tailscale-up)
+    # join tailnet pakai key dari env atau Doppler; hostname bisa dioverride TAILSCALE_HOSTNAME=
+    if [[ -n "${TAILSCALE_AUTH_KEY:-}" ]]; then
+      KEY="$TAILSCALE_AUTH_KEY"
+      SRC="env TAILSCALE_AUTH_KEY"
+    elif command -v doppler >/dev/null 2>&1; then
+      _p="${DEVKIT_TAILSCALE_DOPPLER_PROJECT:-${INFRA_DOPPLER_PROJECT:-infrastructure}}"
+      _c="${DEVKIT_TAILSCALE_DOPPLER_CONFIG:-${INFRA_DOPPLER_CONFIG:-dev}}"
+      KEY="$(doppler secrets get TAILSCALE_AUTH_KEY --project="$_p" --config="$_c" --plain 2>/dev/null || true)"
+      SRC="Doppler $_p/$_c"
+    fi
+    [[ -n "${KEY:-}" ]] || { echo "No TAILSCALE_AUTH_KEY. Run: devkit set-tailscale-key (atau export TAILSCALE_AUTH_KEY=tskey-...)" >&2; exit 1; }
+    HN="${TAILSCALE_HOSTNAME:-$(hostname)}"
+    echo "tailscale up --hostname=$HN (key dari $SRC)"
+    if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+      printf '%s' "$KEY" | sudo -E tailscale up --auth-key="$KEY" --hostname="$HN" ${TAILSCALE_EXTRA_ARGS:-} || sudo tailscale up --auth-key="$KEY" --hostname="$HN" ${TAILSCALE_EXTRA_ARGS:-}
+    elif [[ "$(id -u)" == "0" ]]; then
+      tailscale up --auth-key="$KEY" --hostname="$HN" ${TAILSCALE_EXTRA_ARGS:-}
+    else
+      echo "Need sudo/root untuk 'tailscale up'. Coba: sudo tailscale up --auth-key='tskey-...' --hostname=$HN" >&2
+      exit 1
+    fi
+    unset KEY
+    tailscale status | head -5 || true
+    ;;
+
   set-gh-token)
     command -v doppler >/dev/null 2>&1 || { echo "Doppler CLI is required." >&2; exit 1; }
     read -r -s -p "GitHub PAT (input hidden): " token
@@ -337,6 +375,8 @@ devkit — multi-project / multi-VPS helper
   devkit restore-grok        restore Grok config and AI for UI from Doppler
   devkit set-gh-token        securely save a GitHub PAT in Doppler
   devkit set-cloudflare-token securely save a Cloudflare API token in Doppler
+  devkit set-tailscale-key   securely save a Tailscale auth key (tskey-...) in Doppler
+  devkit tailscale-up        join tailnet using key from env/Doppler
   devkit github-auth CMD     run a GitHub command with the Doppler PAT
   devkit push [ARGS]         git push with the Doppler PAT
   devkit sync-registry       copy projects.yaml → ~/.linux-devkit/

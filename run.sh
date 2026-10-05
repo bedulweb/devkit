@@ -18,6 +18,9 @@
 #   DEVKIT_PROFILE                    minimal|default|full  (default: default)
 #   DEVKIT_WITH_DOCKER                0|1  (default: 0)
 #   DEVKIT_WITH_HERDR                 0|1  (default: 1 for default/full profile)
+#   TAILSCALE_AUTH_KEY                tskey-auth-... (atau simpan di Doppler infrastructure/dev)
+#   TAILSCALE_HOSTNAME                hostname tailnet (default: $(hostname))
+#   DEVKIT_WITH_TAILSCALE             0|1  (default: 1 — install + auto-join Tailscale)
 #   DEVKIT_WITH_HERDR_MACHINES        0|1  (default: 1 — daftarkan saved SSH machines
 #                                     dari config/herdr-machines, key via Doppler)
 #   DEVKIT_SKIP_SKILLS                0|1  (default: 0)
@@ -56,6 +59,7 @@ PROFILE="${DEVKIT_PROFILE:-default}"
 WITH_DOCKER="${DEVKIT_WITH_DOCKER:-0}"
 # herdr on by default for default/full (user agent TUI stack)
 WITH_HERDR="${DEVKIT_WITH_HERDR:-1}"
+WITH_TAILSCALE="${DEVKIT_WITH_TAILSCALE:-1}"
 SKIP_SKILLS="${DEVKIT_SKIP_SKILLS:-0}"
 SKIP_DEPS="${DEVKIT_SKIP_INSTALL_DEPS:-0}"
 DOPPLER_CONFIG="${DOPPLER_CONFIG:-dev}"
@@ -105,6 +109,11 @@ step_install() {
     flags+=(--with-herdr)
   else
     flags+=(--no-herdr)
+  fi
+  if [[ "$WITH_TAILSCALE" == "1" ]]; then
+    flags+=(--with-tailscale)
+  else
+    flags+=(--no-tailscale)
   fi
   DEVKIT_WITH_HERDR="$WITH_HERDR" bash "$HOME/linux-devkit/install.sh" "${flags[@]}"
   export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.local/go/bin:${PATH}"
@@ -228,6 +237,20 @@ step_doppler() {
     doppler whoami 2>/dev/null | head -12 || true
   else
     warn "Doppler auth gagal — cek DOPPLER_TOKEN di ~/.devkit.env"
+  fi
+}
+
+# ── step 4b: Tailscale auto-join (setelah Doppler auth, tanpa setup manual) ──
+step_tailscale() {
+  log "4b/7  Tailscale (auto-join)"
+  if [[ "$WITH_TAILSCALE" != "1" ]]; then
+    log "skip (DEVKIT_WITH_TAILSCALE=0)"
+    return 0
+  fi
+  if [[ -x "$DEVKIT_DIR/scripts/install-tailscale.sh" ]]; then
+    bash "$DEVKIT_DIR/scripts/install-tailscale.sh" || warn "tailscale auto-join incomplete"
+  else
+    warn "install-tailscale.sh missing"
   fi
 }
 
@@ -435,6 +458,7 @@ main() {
   step_kit
   step_install
   step_doppler
+  step_tailscale
   step_cli_auth
   step_github
   step_herdr_machines

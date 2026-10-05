@@ -21,6 +21,10 @@ else
 fi
 BACKUP_HOST="${RESTIC_BACKUP_HOST:-devkit}"
 BACKUP_ROOT="${RESTIC_BACKUP_ROOT:-$HOME/projects}"
+# Session/state dirs restored alongside projects so a fresh VPS can resume
+# opencode sessions and herdr workspaces. Override with
+# RESTIC_BACKUP_EXTRA="path1 path2" (empty to disable).
+BACKUP_EXTRA="${RESTIC_BACKUP_EXTRA:-$HOME/.local/share/opencode $HOME/.config/herdr}"
 
 [[ -x "$DRESTIC" ]] || { echo "need drestic (bash ~/linux-devkit/scripts/install-restic.sh)" >&2; exit 1; }
 [[ -r "$BACKUP_ROOT" ]] || { echo "cannot read BACKUP_ROOT=$BACKUP_ROOT" >&2; exit 1; }
@@ -35,17 +39,23 @@ EXCLUDES=(
   --exclude='**/build'
   --exclude='**/.cache'
   --exclude='**/coverage'
+  --exclude='*.sock'
+  --exclude='*.log'
 )
 
 cmd="${1:-backup}"
 case "$cmd" in
   backup)
     "$DRESTIC" unlock >/dev/null 2>&1 || true
+    extra=()
+    for p in $BACKUP_EXTRA; do
+      [[ -r "$p" ]] && extra+=("$p")
+    done
     exec "$DRESTIC" backup \
       --host "$BACKUP_HOST" \
       --tag devkit-apps,auto \
       "${EXCLUDES[@]}" \
-      "$BACKUP_ROOT"
+      "$BACKUP_ROOT" "${extra[@]}"
     ;;
   forget)
     exec "$DRESTIC" forget \
