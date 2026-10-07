@@ -29,11 +29,13 @@ BACKUP_EXTRA="${RESTIC_BACKUP_EXTRA:-$HOME/.local/share/opencode $HOME/.config/h
 [[ -x "$DRESTIC" ]] || { echo "need drestic (bash ~/linux-devkit/scripts/install-restic.sh)" >&2; exit 1; }
 [[ -r "$BACKUP_ROOT" ]] || { echo "cannot read BACKUP_ROOT=$BACKUP_ROOT" >&2; exit 1; }
 
-# Code history itself is recoverable from git remotes (`devkit restore`);
-# the backup protects working state + data. Skip regenerable bulk.
+# .git is kept: unpushed commits, local branches and linked-worktree
+# metadata (.git/worktrees/*) only exist here, not on any remote.
+# Skip regenerable bulk and git's transient lock files.
 EXCLUDES=(
   --exclude='**/node_modules'
-  --exclude='**/.git'
+  --exclude='**/.git/**/*.lock'
+  --exclude='**/.git/*.lock'
   --exclude='**/.next'
   --exclude='**/dist'
   --exclude='**/build'
